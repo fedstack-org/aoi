@@ -153,7 +153,7 @@ const upload = async () => {
       orgCapability: settings.value.orgCapability,
       orgGroups: []
     }))
-    const res = await http.post(`org/${props.orgId}/admin/member/batchImport`, {
+    const res = await http.post(`org/${props.orgId}/admin/member/batch-import`, {
       json: {
         users: usersPayload,
         ignoreDuplicates: settings.value.ignoreDuplicates

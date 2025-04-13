@@ -148,7 +148,7 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
         }),
         body: T.Object({
           capability: T.String(),
-          limit: T.Optional(T.String())
+          limit: T.String()
         })
       }
     },
@@ -156,7 +156,7 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
       const ctx = req.inject(kOrgContext)
       const userId = loadUUID(req.params, 'userId', s.httpErrors.badRequest())
       const capability = new BSON.Long(req.body.capability)
-      const limit = req.body.limit ? new BSON.Long(req.body.limit) : undefined
+      const limit = new BSON.Long(req.body.limit)
       const { modifiedCount } = await orgMemberships.updateOne(
         { userId, orgId: ctx._orgId },
         { $set: { capability, limit } },
@@ -192,7 +192,7 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
   )
 
   s.post(
-    '/batchImport',
+    '/batch-import',
     {
       schema: {
         description: 'Batch import members',

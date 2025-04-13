@@ -231,4 +231,33 @@ export const groupScopedRoutes = defineRoutes(async (s) => {
       return {}
     }
   )
+
+  s.patch(
+    '/member/batch-update-capability',
+    {
+      schema: {
+        description: 'Batch update organization members in group',
+        body: T.Object({
+          capability: T.Optional(T.String()),
+          limit: T.Optional(T.String())
+        })
+      }
+    },
+    async (req, rep) => {
+      const ctx = req.inject(kGroupContext)
+      const group = await groups.findOne({ _id: ctx.groupId }, { projection: { orgId: 1 } })
+      if (!group) return rep.notFound()
+      const membership = await req.loadMembership(group.orgId)
+      if (!membership) return rep.forbidden()
+      ensureCapability(membership.capability, ORG_CAPS.CAP_ADMIN, s.httpErrors.forbidden())
+      const capability = req.body.capability ? new BSON.Long(req.body.capability) : undefined
+      const limit = req.body.limit ? new BSON.Long(req.body.limit) : undefined
+      await orgMemberships.updateMany(
+        { orgId: group.orgId, groups: ctx.groupId },
+        { $set: { capability, limit } },
+        { ignoreUndefined: true }
+      )
+      return {}
+    }
+  )
 })
