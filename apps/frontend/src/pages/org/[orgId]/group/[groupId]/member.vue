@@ -8,6 +8,7 @@
         :text="t('action.batch-update-capability')"
         @click="openDialog"
       />
+      <VSpacer />
       <div class="flex-grow-1 u-max-w-64">
         <UserIdInput
           v-model="newMember"

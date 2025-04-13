@@ -63,6 +63,7 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
               'user._id': 1,
               'user.profile': 1,
               capability: 1,
+              limit: 1,
               groups: 1
             }
           },
