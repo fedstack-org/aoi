@@ -4,7 +4,7 @@ import { BSON } from 'mongodb'
 import { IUser, ORG_CAPS } from '../../../db/index.js'
 import { SUserProfile } from '../../../index.js'
 import { T } from '../../../schemas/index.js'
-import { paginationSkip } from '../../../utils/index.js'
+import { CAP_NONE, paginationSkip } from '../../../utils/index.js'
 import { defineRoutes, loadUUID } from '../../common/index.js'
 import { kOrgContext } from '../inject.js'
 
@@ -20,7 +20,8 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
           page: T.Integer({ minimum: 1, default: 1 }),
           perPage: T.Integer({ enum: [15, 30, 50, 100] }),
           count: T.Boolean({ default: false }),
-          capability: T.Optional(T.String())
+          capability: T.String(),
+          limit: T.String()
         }),
         response: {
           200: T.PaginationResult(T.Any())
@@ -80,6 +81,7 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
               'user._id': 1,
               'user.profile': 1,
               capability: 1,
+              limit: 1,
               'groups._id': 1,
               'groups.profile': 1
             }
@@ -88,6 +90,11 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
             $addFields: {
               capability: {
                 $toString: '$capability'
+              },
+              limit: {
+                $toString: {
+                  $ifNull: ['$limit', CAP_NONE]
+                }
               }
             }
           }
@@ -140,7 +147,8 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
           userId: T.String()
         }),
         body: T.Object({
-          capability: T.String()
+          capability: T.String(),
+          limit: T.String()
         })
       }
     },
@@ -148,9 +156,11 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
       const ctx = req.inject(kOrgContext)
       const userId = loadUUID(req.params, 'userId', s.httpErrors.badRequest())
       const capability = new BSON.Long(req.body.capability)
+      const limit = new BSON.Long(req.body.limit)
       const { modifiedCount } = await orgMemberships.updateOne(
         { userId, orgId: ctx._orgId },
-        { $set: { capability } }
+        { $set: { capability, limit } },
+        { ignoreUndefined: true }
       )
       if (!modifiedCount) return rep.notFound()
       return {}
@@ -182,7 +192,7 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
   )
 
   s.post(
-    '/batchImport',
+    '/batch-import',
     {
       schema: {
         description: 'Batch import members',

@@ -4,11 +4,18 @@ import {
   CONTEST_CAPS,
   IContestParticipantRuleCtx,
   ORG_CAPS,
+  ORG_LIMITS,
   evalTagRules,
   getCurrentContestStage
 } from '../../db/index.js'
 import { SContestParticipantRuleResult, SContestStage, T } from '../../schemas/index.js'
-import { CAP_ALL, createEvaluator, ensureCapability, hasCapability } from '../../utils/index.js'
+import {
+  CAP_ALL,
+  CAP_NONE,
+  createEvaluator,
+  ensureCapability,
+  hasCapability
+} from '../../utils/index.js'
 import { manageContent } from '../common/content.js'
 import { defineRoutes, loadCapability, loadUUID, paramSchemaMerger } from '../common/index.js'
 
@@ -40,11 +47,12 @@ export const contestScopedRoutes = defineRoutes(async (s) => {
     const contest = await contests.findOne({ _id: contestId })
     if (!contest) return rep.notFound()
     const membership = await req.loadMembership(contest.orgId)
+    const limited = hasCapability(membership?.limit ?? CAP_NONE, ORG_LIMITS.LIMIT_CONTEST)
     const capability = loadCapability(
       contest,
       membership,
       ORG_CAPS.CAP_CONTEST,
-      CONTEST_CAPS.CAP_ACCESS,
+      limited ? CAP_NONE : CONTEST_CAPS.CAP_ACCESS,
       CAP_ALL
     )
     const participant = await contestParticipants.findOne({

@@ -3,6 +3,12 @@
     <VCardTitle class="d-flex justify-space-between align-center">
       <div>{{ t('term.members') }}</div>
       <div class="flex-grow-1 u-max-w-64">
+        <VBtn
+          prepend-icon="mdi-pencil"
+          variant="text"
+          :text="t('action.batch-update-capability')"
+          @click="openDialog"
+        />
         <UserIdInput
           v-model="newMember"
           density="compact"
@@ -40,6 +46,18 @@
         <VBtn icon="mdi-delete" variant="text" @click="deleteMember(item.user._id)" />
       </template>
     </VDataTableServer>
+    <VDialog v-model="dialog" width="auto">
+      <VCard>
+        <VCardText>
+          <CapabilityInput v-model="dialogCapability" :bits="orgBits" />
+          <CapabilityInput v-model="dialogLimit" :bits="orgLimits" />
+        </VCardText>
+        <VCardActions>
+          <VBtn color="primary" @click="batchUpdate">{{ t('action.update') }}</VBtn>
+          <VBtn color="error" @click="dialog = false">{{ t('action.cancel') }}</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </VCard>
 </template>
 
@@ -51,7 +69,7 @@ import { useI18n } from 'vue-i18n'
 import AoiGravatar from '@/components/aoi/AoiGravatar.vue'
 import CapabilityChips from '@/components/utils/CapabilityChips.vue'
 import UserIdInput from '@/components/utils/UserIdInput.vue'
-import { orgBits } from '@/utils/capability'
+import { orgBits, orgLimits } from '@/utils/capability'
 import { http } from '@/utils/http'
 import { withTitle } from '@/utils/title'
 
@@ -97,12 +115,35 @@ async function deleteMember(userId: string) {
 
 const newMember = ref('')
 async function addMember() {
+  try {
+    await http.post(`org/${props.orgId}/admin/member`, {
+      json: { userId: newMember.value }
+    })
+  } catch (e) {
+    console.warn(e)
+  }
   await http.post(`group/${props.groupId}/member`, {
-    json: {
-      userId: newMember.value
-    }
+    json: { userId: newMember.value }
   })
   groups.execute()
   newMember.value = ''
+}
+
+const dialog = ref(false)
+const dialogCapability = ref('')
+const dialogLimit = ref('')
+
+function openDialog() {
+  dialogCapability.value = '0'
+  dialogLimit.value = '0'
+  dialog.value = true
+}
+
+async function batchUpdate() {
+  dialog.value = false
+  await http.patch(`group/${props.groupId}/member/batch-update-capability`, {
+    json: { capability: dialogCapability.value, limit: dialogLimit.value }
+  })
+  groups.execute()
 }
 </script>

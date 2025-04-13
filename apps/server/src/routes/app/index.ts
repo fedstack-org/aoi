@@ -1,8 +1,8 @@
 import { randomBytes } from 'node:crypto'
 
-import { UUID } from 'mongodb'
+import { Filter, UUID } from 'mongodb'
 
-import { ORG_CAPS } from '../../db/index.js'
+import { IApp, ORG_CAPS, ORG_LIMITS } from '../../db/index.js'
 import { T, AccessLevel } from '../../schemas/index.js'
 import { CAP_NONE, findPaginated, hasCapability } from '../../utils/index.js'
 import { filterMerge, searchToFilter } from '../../utils/search.js'
@@ -97,16 +97,17 @@ export const appRoutes = defineRoutes(async (s) => {
           : AccessLevel.RESTRICED
         : AccessLevel.PUBLIC
       const principalIds = [req.user.userId, ...(membership?.groups ?? [])]
-      const filter = filterMerge(
-        {
-          orgId,
-          $or: [
-            { accessLevel: { $lte: basicAccessLevel } },
-            { 'associations.principalId': { $in: principalIds } }
-          ]
-        },
-        searchFilter
-      )
+      const accessFilter: Filter<IApp> = { orgId }
+      if (hasCapability(membership?.limit ?? CAP_NONE, ORG_LIMITS.LIMIT_APP)) {
+        accessFilter['associations.principalId'] = { $in: principalIds }
+      } else {
+        accessFilter.$or = [
+          { accessLevel: { $lte: basicAccessLevel } },
+          { 'associations.principalId': { $in: principalIds } }
+        ]
+      }
+
+      const filter = filterMerge(accessFilter, searchFilter)
       const result = await findPaginated(apps, page, perPage, count, filter, {
         projection: {
           _id: 1,

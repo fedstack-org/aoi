@@ -1,8 +1,8 @@
 import { BSON } from 'mongodb'
 
-import { PLAN_CAPS } from '../../db/index.js'
+import { ORG_LIMITS, PLAN_CAPS } from '../../db/index.js'
 import { T } from '../../schemas/index.js'
-import { CAP_ALL, hasCapability } from '../../utils/index.js'
+import { CAP_ALL, CAP_NONE, hasCapability } from '../../utils/index.js'
 import { manageContent } from '../common/content.js'
 import { defineRoutes, loadCapability, paramSchemaMerger, tryLoadUUID } from '../common/index.js'
 
@@ -28,11 +28,12 @@ export const planScopedRoutes = defineRoutes(async (s) => {
     const plan = await plans.findOne({ _id: planId })
     if (!plan) return rep.notFound()
     const membership = await req.loadMembership(plan.orgId)
+    const limited = hasCapability(membership?.limit ?? CAP_NONE, ORG_LIMITS.LIMIT_PLAN)
     const capability = loadCapability(
       plan,
       membership,
       PLAN_CAPS.CAP_ADMIN,
-      PLAN_CAPS.CAP_ACCESS,
+      limited ? CAP_NONE : PLAN_CAPS.CAP_ACCESS,
       CAP_ALL
     )
     if (!hasCapability(capability, PLAN_CAPS.CAP_ACCESS)) return rep.forbidden()

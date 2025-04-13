@@ -58,6 +58,7 @@ action:
   recommend-problem: Recommend Problem
   select: Select
   send-otp: Send OTP
+  batch-update-capability: Batch Update Capability
 
 term:
   content: Content

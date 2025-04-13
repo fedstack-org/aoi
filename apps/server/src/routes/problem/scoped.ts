@@ -1,11 +1,11 @@
 import { SProblemConfigSchema } from '@aoi-js/common'
 import { BSON, MongoServerError } from 'mongodb'
 
-import { PROBLEM_CAPS, ORG_CAPS, SolutionState } from '../../db/index.js'
+import { PROBLEM_CAPS, ORG_CAPS, SolutionState, ORG_LIMITS } from '../../db/index.js'
 import { InstanceState, InstanceTaskState } from '../../db/instance.js'
 import { getUploadUrl, solutionDataKey } from '../../oss/index.js'
 import { T, SProblemSettings } from '../../schemas/index.js'
-import { CAP_ALL, ensureCapability, hasCapability } from '../../utils/capability.js'
+import { CAP_ALL, CAP_NONE, ensureCapability, hasCapability } from '../../utils/capability.js'
 import { manageContent } from '../common/content.js'
 import { defineRoutes, loadCapability, loadUUID, paramSchemaMerger } from '../common/index.js'
 
@@ -30,11 +30,12 @@ export const problemScopedRoutes = defineRoutes(async (s) => {
     const problem = await problems.findOne({ _id: problemId })
     if (!problem) throw s.httpErrors.notFound()
     const membership = await req.loadMembership(problem.orgId)
+    const limited = hasCapability(membership?.limit ?? CAP_NONE, ORG_LIMITS.LIMIT_PROBLEM)
     const capability = loadCapability(
       problem,
       membership,
       ORG_CAPS.CAP_PROBLEM,
-      PROBLEM_CAPS.CAP_ACCESS,
+      limited ? CAP_NONE : PROBLEM_CAPS.CAP_ACCESS,
       CAP_ALL
     )
     ensureCapability(capability, PROBLEM_CAPS.CAP_ACCESS, s.httpErrors.forbidden())

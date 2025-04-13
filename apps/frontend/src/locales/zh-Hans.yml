@@ -58,6 +58,7 @@ action:
   recommend-problem: 推荐题目
   select: 选择
   send-otp: 发送验证码
+  batch-update-capability: 批量更新权限
 
 term:
   content: 内容
