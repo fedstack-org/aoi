@@ -1,6 +1,6 @@
-import { UUID } from 'mongodb'
+import { Filter, UUID } from 'mongodb'
 
-import { ContestRanklistState, ORG_CAPS } from '../../db/index.js'
+import { ContestRanklistState, IContest, ORG_CAPS, ORG_LIMITS } from '../../db/index.js'
 import { SContestStage } from '../../schemas/contest.js'
 import { T, AccessLevel } from '../../schemas/index.js'
 import { CAP_NONE, ensureCapability, findPaginated, hasCapability } from '../../utils/index.js'
@@ -133,16 +133,17 @@ export const contestRoutes = defineRoutes(async (s) => {
           : AccessLevel.RESTRICED
         : AccessLevel.PUBLIC
       const principalIds = [req.user.userId, ...(membership?.groups ?? [])]
-      const filter = filterMerge(
-        {
-          orgId,
-          $or: [
-            { accessLevel: { $lte: basicAccessLevel } },
-            { 'associations.principalId': { $in: principalIds } }
-          ]
-        },
-        searchFilter
-      )
+      const accessFilter: Filter<IContest> = { orgId }
+      if (hasCapability(membership?.limit ?? CAP_NONE, ORG_LIMITS.LIMIT_CONTEST)) {
+        accessFilter['associations.principalId'] = { $in: principalIds }
+      } else {
+        accessFilter.$or = [
+          { accessLevel: { $lte: basicAccessLevel } },
+          { 'associations.principalId': { $in: principalIds } }
+        ]
+      }
+
+      const filter = filterMerge(accessFilter, searchFilter)
       const result = await findPaginated(
         contests,
         page,

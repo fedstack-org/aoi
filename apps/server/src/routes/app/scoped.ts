@@ -1,6 +1,6 @@
-import { APP_CAPS } from '../../db/index.js'
+import { APP_CAPS, ORG_LIMITS } from '../../db/index.js'
 import { T, SAppSettings } from '../../schemas/index.js'
-import { CAP_ALL, hasCapability } from '../../utils/index.js'
+import { CAP_ALL, CAP_NONE, hasCapability } from '../../utils/index.js'
 import { manageContent } from '../common/content.js'
 import { defineRoutes, loadCapability, paramSchemaMerger, tryLoadUUID } from '../common/index.js'
 
@@ -25,11 +25,12 @@ export const appScopedRoutes = defineRoutes(async (s) => {
     const app = await apps.findOne({ _id: appId })
     if (!app) return rep.notFound()
     const membership = await req.loadMembership(app.orgId)
+    const limited = hasCapability(membership?.limit ?? CAP_NONE, ORG_LIMITS.LIMIT_APP)
     const capability = loadCapability(
       app,
       membership,
       APP_CAPS.CAP_ADMIN,
-      APP_CAPS.CAP_ACCESS,
+      limited ? CAP_NONE : APP_CAPS.CAP_ACCESS,
       CAP_ALL
     )
     if (!hasCapability(capability, APP_CAPS.CAP_ACCESS)) return rep.forbidden()

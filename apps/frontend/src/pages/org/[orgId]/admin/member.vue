@@ -45,12 +45,15 @@
       <template v-slot:[`item._cap`]="{ item }">
         <CapabilityChips :bits="orgBits" :capability="item.capability" />
       </template>
+      <template v-slot:[`item._limit`]="{ item }">
+        <CapabilityChips :bits="orgLimits" :capability="item.limit" />
+      </template>
       <template v-slot:[`item._actions`]="{ item }">
         <VBtn icon="mdi-delete" variant="text" @click="deleteMember(item.user._id)" />
         <VBtn
           icon="mdi-pencil"
           variant="text"
-          @click="openDialog(item.user._id, item.capability)"
+          @click="openDialog(item.user._id, item.capability, item.limit)"
         />
       </template>
     </VDataTableServer>
@@ -58,6 +61,7 @@
       <VCard>
         <VCardText>
           <CapabilityInput v-model="dialogCapability" :bits="orgBits" />
+          <CapabilityInput v-model="dialogLimit" :bits="orgLimits" />
         </VCardText>
         <VCardActions>
           <VBtn color="primary" @click="updatePrincipal">{{ t('action.update') }}</VBtn>
@@ -77,7 +81,7 @@ import AoiGravatar from '@/components/aoi/AoiGravatar.vue'
 import CapabilityChips from '@/components/utils/CapabilityChips.vue'
 import CapabilityInput from '@/components/utils/CapabilityInput.vue'
 import UserIdInput from '@/components/utils/UserIdInput.vue'
-import { orgBits } from '@/utils/capability'
+import { orgBits, orgLimits } from '@/utils/capability'
 import { http } from '@/utils/http'
 import { usePagination } from '@/utils/pagination'
 
@@ -91,6 +95,7 @@ const headers = [
   { title: t('term.profile'), key: 'profile', align: 'start', sortable: false },
   { title: t('term.id'), key: '_id' },
   { title: t('term.capabilities'), key: '_cap' },
+  { title: t('term.limits'), key: '_limit' },
   { title: t('term.actions'), key: '_actions' }
 ] as const
 
@@ -109,6 +114,7 @@ const {
     }
   }
   capability: string
+  limit: string
 }>(
   `org/${props.orgId}/admin/member`,
   computed(() => ({
@@ -135,17 +141,19 @@ async function addMember() {
 const dialog = ref(false)
 const dialogUserId = ref('')
 const dialogCapability = ref('')
+const dialogLimit = ref('')
 
-function openDialog(userId: string, capability: string) {
+function openDialog(userId: string, capability: string, limit: string) {
   dialogUserId.value = userId
   dialogCapability.value = capability
+  dialogLimit.value = limit
   dialog.value = true
 }
 
 async function updatePrincipal() {
   dialog.value = false
   await http.patch(`org/${props.orgId}/admin/member/${dialogUserId.value}/capability`, {
-    json: { capability: dialogCapability.value }
+    json: { capability: dialogCapability.value, limit: dialogLimit.value }
   })
   members.execute(0, page.value, itemsPerPage.value)
 }

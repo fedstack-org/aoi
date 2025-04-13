@@ -14,6 +14,13 @@ export const ORG_CAPS = {
   CAP_INSTANCE: capabilityMask(6)
 }
 
+export const ORG_LIMITS = {
+  LIMIT_PROBLEM: capabilityMask(0),
+  LIMIT_CONTEST: capabilityMask(1),
+  LIMIT_PLAN: capabilityMask(2),
+  LIMIT_APP: capabilityMask(3)
+}
+
 export interface IOrg {
   _id: BSON.UUID
 
@@ -28,6 +35,9 @@ export interface IOrgMembership {
   orgId: BSON.UUID
   capability: BSON.Long
   groups: BSON.UUID[]
+
+  // Member limits
+  limit?: BSON.Long
   tags?: string[]
 }
 

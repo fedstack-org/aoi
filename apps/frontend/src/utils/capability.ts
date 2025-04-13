@@ -16,6 +16,13 @@ export const orgBits = {
   instance: 6
 }
 
+export const orgLimits = {
+  problem: 0,
+  contest: 1,
+  plan: 2,
+  app: 3
+}
+
 export const problemBits = {
   access: 0,
   admin: 1,
