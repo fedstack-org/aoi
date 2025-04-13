@@ -2,13 +2,13 @@
   <VCard variant="flat">
     <VCardTitle class="d-flex justify-space-between align-center">
       <div>{{ t('term.members') }}</div>
+      <VBtn
+        prepend-icon="mdi-pencil"
+        variant="text"
+        :text="t('action.batch-update-capability')"
+        @click="openDialog"
+      />
       <div class="flex-grow-1 u-max-w-64">
-        <VBtn
-          prepend-icon="mdi-pencil"
-          variant="text"
-          :text="t('action.batch-update-capability')"
-          @click="openDialog"
-        />
         <UserIdInput
           v-model="newMember"
           density="compact"
@@ -68,6 +68,7 @@ import { useI18n } from 'vue-i18n'
 
 import AoiGravatar from '@/components/aoi/AoiGravatar.vue'
 import CapabilityChips from '@/components/utils/CapabilityChips.vue'
+import CapabilityInput from '@/components/utils/CapabilityInput.vue'
 import UserIdInput from '@/components/utils/UserIdInput.vue'
 import { orgBits, orgLimits } from '@/utils/capability'
 import { http } from '@/utils/http'

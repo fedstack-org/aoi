@@ -20,8 +20,7 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
           page: T.Integer({ minimum: 1, default: 1 }),
           perPage: T.Integer({ enum: [15, 30, 50, 100] }),
           count: T.Boolean({ default: false }),
-          capability: T.String(),
-          limit: T.String()
+          capability: T.Optional(T.String())
         }),
         response: {
           200: T.PaginationResult(T.Any())

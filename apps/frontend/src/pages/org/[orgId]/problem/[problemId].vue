@@ -39,7 +39,7 @@
                   {{ t('tabs.management') }}
                 </VTab>
                 <InstanceCreateBtn
-                  v-if="value.config.instanceLabel"
+                  v-if="value.config?.instanceLabel"
                   :org-id="orgId"
                   :problem-id="problemId"
                 />
