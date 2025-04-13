@@ -6,6 +6,6 @@
 
 > The ultimate, scalable, performant online judge infrastructure
 
-[![Publish](https://github.com/fedstackjs/aoi/actions/workflows/publish.yaml/badge.svg)](https://github.com/fedstackjs/aoi/actions/workflows/publish.yaml)
+[![Publish](https://github.com/fedstack-org/aoi/actions/workflows/publish.yaml/badge.svg)](https://github.com/fedstack-org/aoi/actions/workflows/publish.yaml)
 
 </div>

@@ -8,7 +8,7 @@
   "license": "AGPL-3.0-only",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fedstackjs/aoi.git",
+    "url": "git+https://github.com/fedstack-org/aoi.git",
     "directory": "libs/rule"
   },
   "main": "lib/index.js",
