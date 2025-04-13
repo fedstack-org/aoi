@@ -1,11 +1,5 @@
 <template>
-  <VCombobox
-    v-model="chips"
-    :label="t('term.capabilities')"
-    multiple
-    chips
-    :items="allCapabilities"
-  />
+  <VCombobox v-model="chips" :label="t('term.' + type)" multiple chips :items="allCapabilities" />
 </template>
 
 <script setup lang="ts">
@@ -18,9 +12,13 @@ const { t } = useI18n()
 
 const model = defineModel<string>({ required: true })
 
-const props = defineProps<{
-  bits: Record<string, number>
-}>()
+const props = withDefaults(
+  defineProps<{
+    bits: Record<string, number>
+    type?: 'capability' | 'limit'
+  }>(),
+  { type: 'capability' }
+)
 
 const chips = computed({
   get: () =>

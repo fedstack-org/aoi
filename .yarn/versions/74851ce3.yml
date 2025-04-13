@@ -1,0 +1,3 @@
+releases:
+  "@aoi-js/frontend": patch
+  "@aoi-js/server": patch

@@ -61,7 +61,7 @@
       <VCard>
         <VCardText>
           <CapabilityInput v-model="dialogCapability" :bits="orgBits" />
-          <CapabilityInput v-model="dialogLimit" :bits="orgLimits" />
+          <CapabilityInput v-model="dialogLimit" type="limit" :bits="orgLimits" />
         </VCardText>
         <VCardActions>
           <VBtn color="primary" @click="updatePrincipal">{{ t('action.update') }}</VBtn>
@@ -94,7 +94,7 @@ const { t } = useI18n()
 const headers = [
   { title: t('term.profile'), key: 'profile', align: 'start', sortable: false },
   { title: t('term.id'), key: '_id' },
-  { title: t('term.capabilities'), key: '_cap' },
+  { title: t('term.capability'), key: '_cap' },
   { title: t('term.limits'), key: '_limit' },
   { title: t('term.actions'), key: '_actions' }
 ] as const

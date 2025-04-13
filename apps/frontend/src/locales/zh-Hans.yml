@@ -89,7 +89,7 @@ term:
   members: 成员
   runners: 评测机
   profile: 档案
-  capabilities: 权限
+  capability: 权限
   labels: 标签
   danger-zone: 危险设置
   principal-id: 用户或小组 ID
@@ -133,6 +133,7 @@ term:
   rules: 规则
   ip: IP 地址
   banned: 封禁
+  limits: 限制
 
 common:
   created-at: 创建于
@@ -165,6 +166,7 @@ cap:
   content: 管理内容
   data: 管理数据
   registration: 允许报名
+  instance: 实例控制
 
 msg:
   not-found: 页面不存在

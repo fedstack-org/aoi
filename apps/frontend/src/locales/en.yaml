@@ -89,7 +89,7 @@ term:
   members: Members
   runners: Runners
   profile: Profile
-  capabilities: Capabilities
+  capability: Capabilities
   labels: Labels
   danger-zone: Danger Zone
   principal-id: Principal ID
@@ -133,6 +133,7 @@ term:
   rules: Rules
   ip: IP
   banned: Banned
+  limits: Limits
 
 common:
   created-at: Created at

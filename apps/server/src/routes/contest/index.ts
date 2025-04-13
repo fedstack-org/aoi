@@ -10,7 +10,7 @@ import { defineRoutes, loadUUID, swaggerTagMerger } from '../common/index.js'
 import { contestScopedRoutes } from './scoped.js'
 
 export const contestRoutes = defineRoutes(async (s) => {
-  const { contests } = s.db
+  const { contests, orgMemberships } = s.db
 
   s.addHook('onRoute', swaggerTagMerger('contest'))
 
@@ -205,7 +205,15 @@ export const contestRoutes = defineRoutes(async (s) => {
       const searchFilter = searchToFilter(rest)
       if (!searchFilter) return rep.badRequest('Bad search parameters')
 
-      const filter = filterMerge({ accessLevel: AccessLevel.PUBLIC }, searchFilter)
+      const joinedOrgs = await orgMemberships.find({ userId: req.user.userId }).toArray()
+      const orgBlacklist = joinedOrgs
+        .filter((member) => hasCapability(member.limit ?? CAP_NONE, ORG_LIMITS.LIMIT_CONTEST))
+        .map((member) => member.orgId)
+
+      const filter = filterMerge(
+        { accessLevel: AccessLevel.PUBLIC, orgId: { $nin: orgBlacklist } },
+        searchFilter
+      )
       const result = await findPaginated(
         contests,
         page,

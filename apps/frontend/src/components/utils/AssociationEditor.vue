@@ -70,7 +70,7 @@ const { t } = useI18n()
 
 const headers = [
   { title: t('term.profile'), key: 'profile', align: 'start', sortable: false },
-  { title: t('term.capabilities'), key: '_cap' },
+  { title: t('term.capability'), key: '_cap' },
   { title: t('term.actions'), key: '_actions' }
 ] as const
 
