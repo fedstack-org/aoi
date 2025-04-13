@@ -1,6 +1,6 @@
 import { BSON } from 'mongodb'
 
-import { ORG_CAPS, SGroupProfile, ensureCapability, paginationSkip } from '../../index.js'
+import { CAP_NONE, ORG_CAPS, SGroupProfile, ensureCapability, paginationSkip } from '../../index.js'
 import { T } from '../../schemas/index.js'
 import { defineInjectionPoint } from '../../utils/inject.js'
 import { defineRoutes, loadUUID, paramSchemaMerger } from '../common/index.js'
@@ -144,7 +144,7 @@ export const groupScopedRoutes = defineRoutes(async (s) => {
           { $match: { orgId: group.orgId, groups: ctx.groupId } },
           { $skip: skip },
           { $limit: req.query.perPage },
-          { $project: { _id: 1, userId: 1, capability: 1 } },
+          { $project: { _id: 1, userId: 1, capability: 1, limit: 1 } },
           {
             $lookup: {
               from: 'users',
@@ -159,13 +159,19 @@ export const groupScopedRoutes = defineRoutes(async (s) => {
               _id: 1,
               'user._id': 1,
               'user.profile': 1,
-              capability: 1
+              capability: 1,
+              limit: 1
             }
           },
           {
             $addFields: {
               capability: {
                 $toString: '$capability'
+              },
+              limit: {
+                $toString: {
+                  $ifNull: ['$limit', CAP_NONE]
+                }
               }
             }
           }

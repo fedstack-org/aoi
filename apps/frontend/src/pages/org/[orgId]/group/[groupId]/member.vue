@@ -43,6 +43,9 @@
       <template v-slot:[`item._cap`]="{ item }">
         <CapabilityChips :capability="item.capability" :bits="orgBits" />
       </template>
+      <template v-slot:[`item._limit`]="{ item }">
+        <CapabilityChips :bits="orgLimits" :capability="item.limit" />
+      </template>
       <template v-slot:[`item._actions`]="{ item }">
         <VBtn icon="mdi-delete" variant="text" @click="deleteMember(item.user._id)" />
       </template>
@@ -88,6 +91,7 @@ const headers = [
   { title: t('term.profile'), key: 'profile', align: 'start', sortable: false },
   { title: t('term.id'), key: '_id' },
   { title: t('term.capability'), key: '_cap' },
+  { title: t('term.limits'), key: '_limit' },
   { title: t('term.actions'), key: '_actions' }
 ] as const
 
