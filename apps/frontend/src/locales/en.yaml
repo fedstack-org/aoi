@@ -133,7 +133,7 @@ term:
   rules: Rules
   ip: IP
   banned: Banned
-  limits: Limits
+  limit: Limits
 
 common:
   created-at: Created at

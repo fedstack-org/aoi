@@ -145,7 +145,10 @@ export const authRoutes = defineRoutes(async (s) => {
       const verified = await authProviders[provider].verify(req.user.userId, payload, req, rep)
       if (!verified) return rep.forbidden()
       const jwt = rep
-        .newPayload({})
+        .newPayload({
+          userId: req.user.userId.toString(),
+          tags: [`.mfa.${provider}`]
+        })
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
         .setExpirationTime('30m')

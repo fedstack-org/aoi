@@ -91,7 +91,7 @@ const headers = [
   { title: t('term.profile'), key: 'profile', align: 'start', sortable: false },
   { title: t('term.id'), key: '_id' },
   { title: t('term.capability'), key: '_cap' },
-  { title: t('term.limits'), key: '_limit' },
+  { title: t('term.limit'), key: '_limit' },
   { title: t('term.actions'), key: '_actions' }
 ] as const
 

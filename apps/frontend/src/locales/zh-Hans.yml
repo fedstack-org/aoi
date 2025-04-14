@@ -133,7 +133,7 @@ term:
   rules: 规则
   ip: IP 地址
   banned: 封禁
-  limits: 限制
+  limit: 限制
 
 common:
   created-at: 创建于
