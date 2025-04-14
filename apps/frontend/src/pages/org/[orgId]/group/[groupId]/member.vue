@@ -23,7 +23,8 @@
       :headers="headers"
       :items-length="groups.state.value.total"
       :items="groups.state.value.items"
-      :items-per-page="15"
+      v-model:page="page"
+      v-model:items-per-page="itemsPerPage"
       :items-per-page-options="[15, 30, 50, 100]"
       :loading="groups.isLoading.value"
       item-value="_id"
@@ -66,7 +67,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAsyncState } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -76,6 +76,7 @@ import CapabilityInput from '@/components/utils/CapabilityInput.vue'
 import UserIdInput from '@/components/utils/UserIdInput.vue'
 import { orgBits, orgLimits } from '@/utils/capability'
 import { http } from '@/utils/http'
+import { usePagination } from '@/utils/pagination'
 import { withTitle } from '@/utils/title'
 
 const props = defineProps<{
@@ -95,28 +96,16 @@ const headers = [
   { title: t('term.actions'), key: '_actions' }
 ] as const
 
-const groups = useAsyncState(
-  async (page = 1, itemsPerPage = 15) => {
-    const resp = await http.get(`group/${props.groupId}/member`, {
-      searchParams: {
-        page: page,
-        perPage: itemsPerPage,
-        count: true
-      }
-    })
-
-    return resp.json<{
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      items: any[]
-      total: number
-    }>()
-  },
-  { items: [], total: 0 }
-)
+const {
+  page,
+  itemsPerPage,
+  result: groups
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} = usePagination<any>(`group/${props.groupId}/member`, {})
 
 async function deleteMember(userId: string) {
   await http.delete(`group/${props.groupId}/member/${userId}`)
-  groups.execute()
+  groups.execute(0, page.value, itemsPerPage.value)
 }
 
 const newMember = ref('')
@@ -131,7 +120,7 @@ async function addMember() {
   await http.post(`group/${props.groupId}/member`, {
     json: { userId: newMember.value }
   })
-  groups.execute()
+  groups.execute(0, page.value, itemsPerPage.value)
   newMember.value = ''
 }
 
@@ -150,6 +139,6 @@ async function batchUpdate() {
   await http.patch(`group/${props.groupId}/member/batch-update-capability`, {
     json: { capability: dialogCapability.value, limit: dialogLimit.value }
   })
-  groups.execute()
+  groups.execute(0, page.value, itemsPerPage.value)
 }
 </script>

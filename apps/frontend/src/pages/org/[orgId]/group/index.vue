@@ -7,7 +7,8 @@
             :headers="headers"
             :items-length="groups.state.value.total"
             :items="groups.state.value.items"
-            :items-per-page="15"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
             :items-per-page-options="[15, 30, 50, 100]"
             :loading="groups.isLoading.value"
             item-value="name"
@@ -32,12 +33,11 @@
 </template>
 
 <script setup lang="ts">
-import { useAsyncState } from '@vueuse/core'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import AoiGravatar from '@/components/aoi/AoiGravatar.vue'
-import { http } from '@/utils/http'
+import { usePagination } from '@/utils/pagination'
 import { withTitle } from '@/utils/title'
 
 const props = defineProps<{
@@ -53,23 +53,21 @@ const headers = [
   { title: 'ID', key: '_id' }
 ] as const
 
-const groups = useAsyncState(
-  async (page = 1, itemsPerPage = 15) => {
-    const resp = await http.get(`group`, {
-      searchParams: {
-        orgId: props.orgId,
-        page: page,
-        perPage: itemsPerPage,
-        count: true
-      }
-    })
-
-    return resp.json<{
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      items: any[]
-      total: number
-    }>()
-  },
-  { items: [], total: 0 }
+const {
+  page,
+  itemsPerPage,
+  result: groups
+} = usePagination<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _id: string
+  profile: {
+    name: string
+    email: string
+  }
+}>(
+  `group`,
+  computed(() => ({
+    orgId: props.orgId
+  }))
 )
 </script>

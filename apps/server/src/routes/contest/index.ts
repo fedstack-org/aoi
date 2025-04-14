@@ -205,7 +205,9 @@ export const contestRoutes = defineRoutes(async (s) => {
       const searchFilter = searchToFilter(rest)
       if (!searchFilter) return rep.badRequest('Bad search parameters')
 
-      const joinedOrgs = await orgMemberships.find({ userId: req.user.userId }).toArray()
+      const joinedOrgs = req.user
+        ? await orgMemberships.find({ userId: req.user.userId }).toArray()
+        : []
       const orgBlacklist = joinedOrgs
         .filter((member) => hasCapability(member.limit ?? CAP_NONE, ORG_LIMITS.LIMIT_CONTEST))
         .map((member) => member.orgId)
