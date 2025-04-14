@@ -7,6 +7,7 @@ export interface IPublicRanklist {
   contestId: BSON.UUID
   ranklistKey: string
   visible: boolean
+  password?: string
 }
 
 declare module './index.js' {

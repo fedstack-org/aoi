@@ -42,36 +42,46 @@ export const pubrkScopedRoutes = defineRoutes(async (s) => {
     s.register(getFileUrl, {
       resolve: async (type, query, req) => {
         const ctx = req.inject(kPubrkContext)
-        if (!ctx._pubranklist.visible) throw s.httpErrors.notFound()
-        const key = ctx._pubranklist.ranklistKey
-        return [ctx._pubranklist.orgId, contestRanklistKey(ctx._pubranklist.contestId, key), query]
+        const { visible, password, orgId, ranklistKey, contestId } = ctx._pubranklist
+        if (!visible) throw s.httpErrors.notFound()
+        if (password && password !== req.headers['x-ranklist-password']) {
+          throw s.httpErrors.forbidden()
+        }
+        const key = ranklistKey
+        return [orgId, contestRanklistKey(contestId, key), query]
       },
       allowedTypes: ['download']
     })
   })
 
   s.get(
-    '/visible',
+    '/settings',
     {
       schema: {
         response: {
           200: T.Object({
-            visible: T.Boolean()
+            visible: T.Boolean(),
+            password: T.String()
           })
         }
       }
     },
     async (req) => {
-      return { visible: req.inject(kPubrkContext)._pubranklist.visible }
+      const ctx = req.inject(kPubrkContext)
+      return {
+        visible: ctx._pubranklist.visible,
+        password: ctx._pubranklist.password ?? ''
+      }
     }
   )
 
   s.patch(
-    '/visible',
+    '/settings',
     {
       schema: {
         body: T.Object({
-          visible: T.Boolean()
+          visible: T.Boolean(),
+          password: T.Optional(T.String())
         }),
         response: {
           200: T.Object({
@@ -97,7 +107,7 @@ export const pubrkScopedRoutes = defineRoutes(async (s) => {
       }
       await pubrk.updateOne(
         { ranklistId: ctx._ranklistId },
-        { $set: { visible: req.body.visible } }
+        { $set: { visible: req.body.visible, password: req.body.password } }
       )
       return { ok: true }
     }

@@ -8,7 +8,7 @@
             {{ `/rk/${value.ranklistId}` }}
           </RouterLink>
         </VCardText>
-        <SettingsEditor :endpoint="`rk/${value.ranklistId}/visible`">
+        <SettingsEditor :endpoint="`rk/${value.ranklistId}/settings`">
           <template v-slot="scoped">
             <RanklistPublicSettingsInput v-model="scoped.value" />
           </template>

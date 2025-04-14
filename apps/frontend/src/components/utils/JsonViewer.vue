@@ -53,6 +53,7 @@ import { http } from '@/utils/http'
 
 const props = defineProps<{
   endpoint?: string
+  headers?: Record<string, string>
   url?: string
   rawData?: T
   rawString?: string
@@ -67,7 +68,9 @@ const viewer = ref<ComponentPublicInstance | null>(null)
 async function resolveUrl() {
   if (props.url) return props.url
   if (props.endpoint) {
-    const { url } = await http.get(`${props.endpoint}/download`).json<{ url: string }>()
+    const { url } = await http
+      .get(`${props.endpoint}/download`, { headers: props.headers })
+      .json<{ url: string }>()
     return url
   }
   throw new Error('No url or endpoint provided')

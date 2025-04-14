@@ -1,15 +1,14 @@
 <template>
   <VCard>
-    <RanklistViewer :endpoint="`rk/${ranklistId}`" />
+    <RanklistViewer :endpoint="`rk/${ranklistId}`" :password />
   </VCard>
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import { useRouteQuery } from '@vueuse/router'
 
 import RanklistViewer from '@/components/contest/RanklistViewer.vue'
 
-const route = useRoute()
-
-const ranklistId = route.params.ranklistId as string
+const ranklistId = useRouteQuery('ranklistId', '', { transform: String })
+const password = useRouteQuery('password', '', { transform: String })
 </script>

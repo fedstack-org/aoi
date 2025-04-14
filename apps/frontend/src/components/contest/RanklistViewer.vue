@@ -1,5 +1,11 @@
 <template>
-  <component :is="JsonViewer<Ranklist>" :endpoint="props.endpoint" hide-raw fullscreen>
+  <component
+    :is="JsonViewer<Ranklist>"
+    :endpoint="endpoint"
+    :headers="password ? { 'x-ranklist-password': password } : undefined"
+    hide-raw
+    fullscreen
+  >
     <template v-slot="{ value }">
       <RanklistRenderer :ranklist="value" />
     </template>
@@ -18,8 +24,9 @@ import RanklistRenderer from '../contest/RanklistRenderer.vue'
 import JsonViewer from '@/components/utils/JsonViewer.vue'
 
 const { t } = useI18n()
-const props = defineProps<{
+defineProps<{
   endpoint: string
+  password?: string
 }>()
 </script>
 

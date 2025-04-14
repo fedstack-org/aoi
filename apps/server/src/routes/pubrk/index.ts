@@ -76,7 +76,10 @@ export const pubrkRoutes = defineRoutes(async (s) => {
       const ranklistKey = req.query.ranklistKey
       const ranklist = await pubrk.findOne({ contestId, ranklistKey })
       if (!ranklist) return { ranklistId: 0, status: 'not public' }
-      return { ranklistId: ranklist.ranklistId, status: 'public' }
+      return {
+        ranklistId: ranklist.ranklistId,
+        status: ranklist.password ? 'protected' : 'public'
+      }
     }
   )
 })
