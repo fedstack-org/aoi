@@ -1,7 +1,7 @@
 <template>
   <AsyncState :state="metadata">
     <template v-slot="{ value }">
-      <template v-if="value.status === 'public'">
+      <template v-if="value.status === 'public' || value.status === 'protected'">
         <VCardText class="text-body-2">
           {{ t('ranklist-published-at') }}
           <RouterLink :to="`/rk/${value.ranklistId}`">

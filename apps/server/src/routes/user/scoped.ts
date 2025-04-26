@@ -1,6 +1,6 @@
 import { BSON } from 'mongodb'
 
-import { SUserProfile, T, USER_CAPS, hasCapability } from '../../index.js'
+import { SUserProfile, T, USER_CAPS, hasCapability, loadEnv, parseBoolean } from '../../index.js'
 import { defineInjectionPoint } from '../../utils/inject.js'
 import { loadUserCapability } from '../common/access.js'
 import { defineRoutes, loadUUID, paramSchemaMerger } from '../common/index.js'
@@ -8,6 +8,8 @@ import { defineRoutes, loadUUID, paramSchemaMerger } from '../common/index.js'
 const kUserContext = defineInjectionPoint<{
   _userId: BSON.UUID
 }>('user')
+
+const DISABLE_USER_RENAME = loadEnv('DISABLE_USER_RENAME', parseBoolean, false)
 
 export const userScopedRoutes = defineRoutes(async (s) => {
   const authProviders = s.authProviders
@@ -98,7 +100,10 @@ export const userScopedRoutes = defineRoutes(async (s) => {
       const { verified, ...rest } = req.body
       const verifiedFields = verified ?? []
       for (const field of verifiedFields) {
-        ;(rest as Record<string, string | undefined>)[field] = undefined
+        rest[field as never] = undefined as never
+      }
+      if (DISABLE_USER_RENAME) {
+        rest.name = undefined as never
       }
 
       const fields = Object.entries(rest).filter(([, v]) => v !== undefined)

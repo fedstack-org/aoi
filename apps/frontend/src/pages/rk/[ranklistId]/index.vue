@@ -5,10 +5,10 @@
 </template>
 
 <script setup lang="ts">
-import { useRouteQuery } from '@vueuse/router'
+import { useRouteParams, useRouteQuery } from '@vueuse/router'
 
 import RanklistViewer from '@/components/contest/RanklistViewer.vue'
 
-const ranklistId = useRouteQuery('ranklistId', '', { transform: String })
+const ranklistId = useRouteParams('ranklistId', '', { transform: String })
 const password = useRouteQuery('password', '', { transform: String })
 </script>
