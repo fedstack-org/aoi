@@ -38,7 +38,7 @@ export const instanceScopedRoute = defineRoutes(async (s) => {
       const ctx = req.inject(kInstanceContext)
       const instance = await instances.findOne({ _id: ctx._instanceId })
       if (!instance) return rep.notFound()
-      if (instance.userId !== req.user.userId) {
+      if (!instance.userId.equals(req.user.userId)) {
         const membership = await req.loadMembership(instance.orgId)
         if (!membership) return rep.notFound()
         if (!hasCapability(membership.capability, ORG_CAPS.CAP_INSTANCE)) return rep.forbidden()
