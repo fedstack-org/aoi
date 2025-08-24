@@ -51,9 +51,6 @@ const colors: Record<string, string> = {
 const login = useAsyncState(
   async () => {
     const data = await http.get('auth/login').json<{ providers: string[]; signup: boolean }>()
-    if (data.providers.length === 1) {
-      router.push({ path: `/auth/login/${data.providers[0]}`, query: route.query })
-    }
     return data
   },
   {
