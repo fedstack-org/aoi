@@ -40,7 +40,13 @@ export const adminUserRoutes = defineRoutes(async (s) => {
         filter,
         {
           projection: {
-            'authSources.authLocked': 1
+            'authSources.password': 0,
+            'authSources.passwordResetDue': 0,
+            'authSources.mail': 0,
+            'authSources.sms': 0,
+            'authSources.iaaaId': 0,
+            'authSources.iaaaInfo': 0,
+            'authSources.uaaa': 0
           }
         }
       )
