@@ -40,12 +40,16 @@ export const adminUserRoutes = defineRoutes(async (s) => {
         filter,
         {
           projection: {
-            authSources: 0
+            authSources: { authLocked: 1 }
           }
         }
       )
       return {
-        items: items.map((item) => ({ ...item, capability: item.capability?.toString() })),
+        items: items.map((item) => ({
+          ...item,
+          capability: item.capability?.toString(),
+          authLocked: item.authSources?.authLocked ?? false
+        })),
         total
       }
     }
@@ -67,6 +71,28 @@ export const adminUserRoutes = defineRoutes(async (s) => {
     async (req) => {
       const capability = new BSON.Long(req.body.capability)
       await users.updateOne({ _id: new BSON.UUID(req.params.userId) }, { $set: { capability } })
+      return {}
+    }
+  )
+
+  s.patch(
+    '/:userId/authLocked',
+    {
+      schema: {
+        description: 'Update user auth locked status',
+        params: T.Object({
+          userId: T.UUID()
+        }),
+        body: T.Object({
+          authLocked: T.Boolean()
+        })
+      }
+    },
+    async (req) => {
+      await users.updateOne(
+        { _id: new BSON.UUID(req.params.userId) },
+        { $set: { 'authSources.authLocked': req.body.authLocked } }
+      )
       return {}
     }
   )

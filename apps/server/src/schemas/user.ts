@@ -11,3 +11,9 @@ export const SUserProfile = T.StrictObject({
 })
 
 export interface IUserProfile extends Static<typeof SUserProfile> {}
+
+export const SUserAuthSources = T.StrictObject({
+  authLocked: T.Optional(T.Boolean())
+})
+
+export interface IUserAuthSourcesSchema extends Static<typeof SUserAuthSources> {}

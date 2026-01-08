@@ -18,6 +18,7 @@ export interface IUserAuthSources {
   iaaaId?: string
   iaaaInfo?: IAAAUserInfo
   uaaa?: string
+  authLocked?: boolean
 }
 
 export interface IUser {

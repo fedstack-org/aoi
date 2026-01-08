@@ -50,6 +50,15 @@
       <template v-slot:[`item._tags`]="{ item }">
         <code>{{ item.tags?.join(', ') }}</code>
       </template>
+      <template v-slot:[`item._authLocked`]="{ item }">
+        <VSwitch
+          :model-value="item.authLocked"
+          @update:model-value="toggleAuthLocked(item._id, $event)"
+          hide-details
+          density="compact"
+          color="warning"
+        />
+      </template>
       <template v-slot:[`item._actions`]="{ item }">
         <VBtn
           icon="mdi-pencil-outline"
@@ -99,6 +108,7 @@ const headers = [
   { title: 'Capabilities', key: '_cap', sortable: false },
   { title: 'Namespace', key: '_namespace', sortable: false },
   { title: 'Tags', key: '_tags', sortable: false },
+  { title: 'Auth Locked', key: '_authLocked', sortable: false },
   { title: 'Actions', key: '_actions', sortable: false }
 ] as const
 
@@ -119,6 +129,7 @@ const {
   capability?: string
   namespace?: string
   tags?: string[]
+  authLocked?: boolean
 }>(
   `admin/user`,
   computed(() => ({
@@ -141,6 +152,14 @@ async function updatePrincipal() {
   dialog.value = false
   await http.patch(`admin/user/${dialogUserId.value}/capability`, {
     json: { capability: dialogCapability.value }
+  })
+  users.execute(0, page.value, itemsPerPage.value)
+}
+
+async function toggleAuthLocked(userId: string, authLocked: boolean | null) {
+  if (authLocked === null) return
+  await http.patch(`admin/user/${userId}/authLocked`, {
+    json: { authLocked }
   })
   users.execute(0, page.value, itemsPerPage.value)
 }

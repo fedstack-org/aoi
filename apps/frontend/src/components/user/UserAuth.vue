@@ -2,9 +2,17 @@
   <VCardTitle>
     {{ t('user-auth') }}
   </VCardTitle>
-  <VSkeletonLoader type="image" v-if="login.isLoading.value" />
+  <VSkeletonLoader type="image" v-if="login.isLoading.value || userInfo.isLoading.value" />
   <VCardText v-else>
-    <VAlert v-if="enableMfa && !hasMfaToken" type="info" color="" :title="t('mfa-required')">
+    <VAlert
+      v-if="userInfo.state.value?.authLocked"
+      type="warning"
+      :title="t('auth-locked')"
+      class="mb-4"
+    >
+      {{ t('auth-locked-desc') }}
+    </VAlert>
+    <VAlert v-else-if="enableMfa && !hasMfaToken" type="info" color="" :title="t('mfa-required')">
       <VBtn variant="outlined" @click="doVerify" :text="t('do-verify')" />
     </VAlert>
     <VRow v-else>
@@ -32,7 +40,7 @@ import { useMfa } from '@/stores/app'
 import { enableMfa } from '@/utils/flags'
 import { http } from '@/utils/http'
 
-defineProps<{
+const props = defineProps<{
   userId: string
 }>()
 
@@ -50,6 +58,11 @@ const components: Record<string, Component> = {
 const login = useAsyncState(() => http.get('auth/verify').json<{ providers: string[] }>(), {
   providers: []
 })
+
+const userInfo = useAsyncState(
+  () => http.get(`user/${props.userId}`).json<{ authLocked?: boolean }>(),
+  {}
+)
 </script>
 
 <i18n>
@@ -62,6 +75,8 @@ en:
   provider-uaaa: UAAA Link
   mfa-required: MFA Required
   do-verify: Verify
+  auth-locked: Auth Locked
+  auth-locked-desc: Authentication modification is disabled for this account.
 zh-Hans:
   user-auth: 用户认证
   provider-password: 密码登录
@@ -71,4 +86,6 @@ zh-Hans:
   provider-uaaa: 绑定统合身份认证
   mfa-required: 需要多因子身份认证
   do-verify: 开始认证
+  auth-locked: 认证已锁定
+  auth-locked-desc: 此账户的认证修改功能已被禁用。
 </i18n>

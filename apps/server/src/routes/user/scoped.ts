@@ -39,7 +39,8 @@ export const userScopedRoutes = defineRoutes(async (s) => {
             profile: SUserProfile,
             capability: T.Optional(T.String()),
             namespace: T.Optional(T.String()),
-            tags: T.Optional(T.Array(T.String()))
+            tags: T.Optional(T.Array(T.String())),
+            authLocked: T.Optional(T.Boolean())
           })
         }
       }
@@ -47,7 +48,15 @@ export const userScopedRoutes = defineRoutes(async (s) => {
     async (req, rep) => {
       const user = await s.db.users.findOne(
         { _id: req.inject(kUserContext)._userId },
-        { projection: { profile: 1, capability: 1, namespace: 1, tags: 1 } }
+        {
+          projection: {
+            profile: 1,
+            capability: 1,
+            namespace: 1,
+            tags: 1,
+            'authSources.authLocked': 1
+          }
+        }
       )
       if (!user) return rep.notFound()
       const ctx = req.inject(kUserContext)
@@ -57,6 +66,7 @@ export const userScopedRoutes = defineRoutes(async (s) => {
       return {
         ...user,
         capability: user.capability?.toString(),
+        authLocked: user.authSources?.authLocked,
         profile: allowSensitive
           ? user.profile
           : { name: user.profile.name, email: user.profile.email, realname: user.profile.realname }
@@ -145,6 +155,12 @@ export const userScopedRoutes = defineRoutes(async (s) => {
       if (!req.user.userId.equals(ctx._userId) && !hasCapability(capability, USER_CAPS.CAP_ADMIN))
         return rep.forbidden()
 
+      const user = await s.db.users.findOne(
+        { _id: ctx._userId },
+        { projection: { 'authSources.authLocked': 1 } }
+      )
+      if (user?.authSources?.authLocked) return rep.forbidden('Auth is locked for this user')
+
       const { provider, payload } = req.body
       if (!Object.hasOwn(authProviders, provider)) return rep.badRequest()
       if (authProviders[provider].enableMfaBind) {
@@ -176,6 +192,12 @@ export const userScopedRoutes = defineRoutes(async (s) => {
       const capability = await loadUserCapability(req)
       if (!req.user.userId.equals(ctx._userId) && !hasCapability(capability, USER_CAPS.CAP_ADMIN))
         return rep.forbidden()
+
+      const user = await s.db.users.findOne(
+        { _id: ctx._userId },
+        { projection: { 'authSources.authLocked': 1 } }
+      )
+      if (user?.authSources?.authLocked) return rep.forbidden('Auth is locked for this user')
 
       const { provider, payload } = req.body
       if (!Object.hasOwn(authProviders, provider)) return rep.badRequest()
