@@ -1,7 +1,7 @@
 <template>
   <VCard variant="flat">
     <VCardText>
-      <VFileInput v-model="files" :label="t('action.upload')" />
+      <VFileInput v-model="file" :label="t('action.upload')" />
     </VCardText>
     <VCardActions>
       <VBtn color="primary" @click="submit">{{ t('action.submit') }}</VBtn>
@@ -25,11 +25,11 @@ const emit = defineEmits<{
   (ev: 'upload', file: File): void
 }>()
 
-const files = ref<File[]>([])
+const file = ref<File | null>(null)
 
 function submit() {
-  if (files.value.length) {
-    emit('upload', files.value[0])
+  if (file.value) {
+    emit('upload', file.value)
   }
 }
 </script>

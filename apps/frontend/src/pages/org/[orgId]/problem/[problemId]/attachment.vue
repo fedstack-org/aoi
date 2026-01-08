@@ -114,7 +114,7 @@ async function deleteFile(key: string) {
 }
 
 const uploadInfo = reactive({
-  file: [] as File[],
+  file: null as File | null,
   key: '',
   name: '',
   description: ''
@@ -127,7 +127,7 @@ async function uploadFile() {
     const { url } = await resp.json<{ url: string }>()
     await fetch(url, {
       method: 'PUT',
-      body: uploadInfo.file[0]
+      body: uploadInfo.file
     })
     await http.post(`problem/${props.problem._id}/attachment`, {
       json: {

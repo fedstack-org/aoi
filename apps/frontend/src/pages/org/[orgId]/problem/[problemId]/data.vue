@@ -36,7 +36,7 @@
                 <VBtn
                   variant="text"
                   icon="mdi-eye"
-                  @click="(currentVersion = version), (infoDialog = true)"
+                  @click="((currentVersion = version), (infoDialog = true))"
                 />
               </td>
             </tr>

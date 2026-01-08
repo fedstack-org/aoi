@@ -50,6 +50,23 @@
           :label="t('set.org-capability')"
           type="number"
         />
+        <VAutocomplete
+          v-model="selectedGroups"
+          :items="groupItems"
+          :label="t('set.select-groups')"
+          :loading="availableGroups.isLoading.value"
+          multiple
+          chips
+          closable-chips
+          item-title="title"
+          item-value="value"
+          clearable
+        />
+        <VCheckbox v-model="createNewGroup" :label="t('set.create-new-group')" />
+        <template v-if="createNewGroup">
+          <VTextField v-model="newGroupProfile.name" :label="t('set.group-name')" />
+          <VTextField v-model="newGroupProfile.email" :label="t('set.group-email')" type="email" />
+        </template>
       </VCardText>
       <VDivider />
       <VCardSubtitle>{{ t('term.actions') }}</VCardSubtitle>
@@ -68,11 +85,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { useAsyncState } from '@vueuse/core'
+import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'vue-toastification'
 import * as xlsx from 'xlsx'
 
+import type { IGroupDTO } from '@/components/group/types'
 import { http } from '@/utils/http'
 
 const props = defineProps<{
@@ -93,7 +112,7 @@ const headers = [
   { title: t('term.actions'), key: 'actions' }
 ] as const
 
-const xlsxFile = ref<File[]>([])
+const xlsxFile = ref<File | null>(null)
 const pageState = ref<'empty' | 'ferr' | 'loaded' | 'neterr'>('empty')
 const userInfo = ref<
   {
@@ -113,16 +132,52 @@ const settings = ref({
   ignoreDuplicates: false
 })
 
+// Group selection state
+const selectedGroups = ref<string[]>([])
+const createNewGroup = ref(false)
+const newGroupProfile = reactive({
+  name: '',
+  email: ''
+})
+
+// Fetch available groups
+const availableGroups = useAsyncState(
+  async () => {
+    const resp = await http.get('group', {
+      searchParams: {
+        orgId: props.orgId,
+        page: 1,
+        perPage: 100
+      }
+    })
+    const data = await resp.json<{
+      total: number
+      items: IGroupDTO[]
+    }>()
+    return data.items
+  },
+  [],
+  { immediate: true }
+)
+
+// Map groups to autocomplete items
+const groupItems = computed(() => {
+  return availableGroups.state.value.map((group) => ({
+    title: group.profile.name,
+    value: group._id
+  }))
+})
+
 // watch if xlsxFile is modified
 watch(xlsxFile, (newFile) => {
   // if xlsxFile is empty, set pageState to empty
-  if (newFile.length === 0) {
+  if (!newFile) {
     pageState.value = 'empty'
     userInfo.value = []
     return
   }
   try {
-    newFile[0].arrayBuffer().then((buffer) => {
+    newFile.arrayBuffer().then((buffer) => {
       const workbook = xlsx.read(buffer, { type: 'array' })
       userInfo.value = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]])
       pageState.value = 'loaded'
@@ -138,6 +193,25 @@ const deleteItem = (name: string) => {
 
 const upload = async () => {
   try {
+    // Handle new group creation if needed
+    let newGroupId: string | null = null
+    if (createNewGroup.value) {
+      const resp = await http.post('group', {
+        json: {
+          orgId: props.orgId,
+          profile: newGroupProfile
+        }
+      })
+      const { groupId } = await resp.json<{ groupId: string }>()
+      newGroupId = groupId
+    }
+
+    // Combine selected groups with newly created group
+    const orgGroups = [...selectedGroups.value]
+    if (newGroupId) {
+      orgGroups.push(newGroupId)
+    }
+
     // construct the real payload
     const usersPayload = userInfo.value.map((item) => ({
       profile: {
@@ -151,7 +225,7 @@ const upload = async () => {
       password: item.password,
       passwordResetDue: settings.value.passwordResetDue,
       orgCapability: settings.value.orgCapability,
-      orgGroups: []
+      orgGroups
     }))
     const res = await http.post(`org/${props.orgId}/admin/member/batch-import`, {
       json: {
@@ -159,7 +233,7 @@ const upload = async () => {
         ignoreDuplicates: settings.value.ignoreDuplicates
       }
     })
-    xlsxFile.value = []
+    xlsxFile.value = null
     const { insertedCount, successCount } = await res.json<{
       insertedCount: number
       successCount: number
@@ -181,6 +255,10 @@ zh-Hans:
     password-reset-due: 是否重置密码
     ignore-duplicates: 忽略重复
     org-capability: 组织权限
+    select-groups: 选择小组
+    create-new-group: 创建新小组
+    group-name: 小组名称
+    group-email: 小组邮箱
 en:
   upload-userinfo-xlsx: Upload User Info (XLSX)
   error-file: Error in file
@@ -190,4 +268,8 @@ en:
     password-reset-due: Reset password
     ignore-duplicates: Ignore duplicates
     org-capability: Organization capability
+    select-groups: Select Groups
+    create-new-group: Create New Group
+    group-name: Group Name
+    group-email: Group Email
 </i18n>

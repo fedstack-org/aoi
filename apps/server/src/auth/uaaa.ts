@@ -69,9 +69,9 @@ export class UaaaAuthProvider extends BaseAuthProvider {
   override async init(): Promise<void> {
     this.uaaaInstance = loadEnv('UAAA_INSTANCE', String)
     this.uaaaAppId = loadEnv('UAAA_APP_ID', String)
-    this.uaaaConfig = await fetch(`${this.uaaaInstance}/.well-known/openid-configuration`).then(
+    this.uaaaConfig = (await fetch(`${this.uaaaInstance}/.well-known/openid-configuration`).then(
       (res) => res.json()
-    )
+    )) as IOpenIdConfiguration
     this.allowSignupFromLogin = loadEnv('UAAA_ALLOW_SIGNUP_FROM_LOGIN', parseBoolean, false)
     this.allowRebind = loadEnv('UAAA_ALLOW_REBIND', parseBoolean, false)
 

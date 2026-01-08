@@ -50,9 +50,16 @@ export const userScopedRoutes = defineRoutes(async (s) => {
         { projection: { profile: 1, capability: 1, namespace: 1, tags: 1 } }
       )
       if (!user) return rep.notFound()
+      const ctx = req.inject(kUserContext)
+      const capability = await loadUserCapability(req)
+      const allowSensitive =
+        req.user.userId.equals(ctx._userId) || hasCapability(capability, USER_CAPS.CAP_ADMIN)
       return {
         ...user,
-        capability: user.capability?.toString()
+        capability: user.capability?.toString(),
+        profile: allowSensitive
+          ? user.profile
+          : { name: user.profile.name, email: user.profile.email, realname: user.profile.realname }
       }
     }
   )
@@ -75,11 +82,7 @@ export const userScopedRoutes = defineRoutes(async (s) => {
         req.user.userId.equals(ctx._userId) || hasCapability(capability, USER_CAPS.CAP_ADMIN)
       return allowSensitive
         ? user.profile
-        : {
-            name: user.profile.name,
-            email: user.profile.email,
-            realname: user.profile.realname
-          }
+        : { name: user.profile.name, email: user.profile.email, realname: user.profile.realname }
     }
   )
 

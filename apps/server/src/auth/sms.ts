@@ -86,7 +86,7 @@ export class SMSAuthProvider extends BaseAuthProvider {
           }
         })
       })
-      const { success, error } = await resp.json()
+      const { success, error } = (await resp.json()) as { success: boolean; error: string }
       if (!success) {
         throw httpErrors.badRequest(error)
       }

@@ -1,8 +1,9 @@
 import { Document } from 'mongodb'
 
+import { USER_CAPS } from '../../db/user.js'
 import { T } from '../../schemas/index.js'
-import { findPaginated, escapeSearch } from '../../utils/index.js'
-import { defineRoutes, md5, swaggerTagMerger } from '../common/index.js'
+import { findPaginated, escapeSearch, hasCapability } from '../../utils/index.js'
+import { defineRoutes, loadUserCapability, md5, swaggerTagMerger } from '../common/index.js'
 
 import { userScopedRoutes } from './scoped.js'
 
@@ -33,10 +34,14 @@ export const userRoutes = defineRoutes(async (s) => {
         }
       }
     },
-    async (req) => {
+    async (req, rep) => {
       const filter: Document = {}
       if (req.query.search) {
         filter['profile.name'] = { $regex: escapeSearch(req.query.search) }
+      }
+      if (!Object.keys(filter).length) {
+        const capability = await loadUserCapability(req)
+        if (!hasCapability(capability, USER_CAPS.CAP_ADMIN)) return rep.forbidden()
       }
       const { items, total } = await findPaginated(
         s.db.users,

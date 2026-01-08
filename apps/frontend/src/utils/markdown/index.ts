@@ -1,5 +1,5 @@
 import { common, createStarryNight } from '@wooorm/starry-night'
-import DOMPurify from 'dompurify'
+import dompurify from 'dompurify'
 import { toHtml } from 'hast-util-to-html'
 import markdownIt from 'markdown-it'
 import onigurumaUrl from 'vscode-oniguruma/release/onig.wasm?url'
@@ -36,5 +36,5 @@ md.use(markdownAlerts)
 md.use(markdownItKatex)
 
 export function renderMarkdown(source: string) {
-  return DOMPurify.sanitize(md.render(source))
+  return dompurify.sanitize(md.render(source))
 }

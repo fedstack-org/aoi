@@ -29,7 +29,7 @@ export function useDataUpload(problemId: string, updated: () => void) {
   const advanced = ref(false)
 
   const uploadInfo = reactive({
-    file: [] as File[],
+    file: null as File | null,
     hash: '',
     description: '',
     configJson: JSON.stringify(
@@ -49,14 +49,13 @@ export function useDataUpload(problemId: string, updated: () => void) {
   watch(
     () => uploadInfo.file,
     () => {
-      if (uploadInfo.file.length > 0) {
-        handleFile()
+      if (uploadInfo.file) {
+        handleFile(uploadInfo.file)
       }
     }
   )
 
-  async function handleFile() {
-    const file = uploadInfo.file[0]
+  async function handleFile(file: File) {
     try {
       if (advanced.value) {
         toast.warning('Advanced mode is on, you need to manually fill in the hash and config')
@@ -80,7 +79,7 @@ export function useDataUpload(problemId: string, updated: () => void) {
     const { url } = await resp.json<{ url: string }>()
     await fetch(url, {
       method: 'PUT',
-      body: uploadInfo.file[0]
+      body: uploadInfo.file
     })
     await http.post(`problem/${problemId}/data`, {
       json: {

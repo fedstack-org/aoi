@@ -10,7 +10,7 @@
     <VBtn
       @click="batchSetFileExec"
       :loading="batchSetFileLoading"
-      :disabled="!batchSetFile.length"
+      :disabled="!batchSetFile"
       color="primary"
     >
       Batch Set
@@ -31,8 +31,11 @@ const props = defineProps<{
   contest: IContestDTO
 }>()
 
-const batchSetFile = ref<File[]>([])
-const { execute: batchSetFileExec, isLoading: batchSetFileLoading } = useAsyncTask(() =>
-  participantBatchUpdate(props.contestId, batchSetFile.value[0])
-)
+const batchSetFile = ref<File | null>(null)
+const { execute: batchSetFileExec, isLoading: batchSetFileLoading } = useAsyncTask(async () => {
+  if (batchSetFile.value) {
+    participantBatchUpdate(props.contestId, batchSetFile.value)
+    batchSetFile.value = null
+  }
+})
 </script>

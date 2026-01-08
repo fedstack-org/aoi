@@ -18,7 +18,7 @@
               v-model="rejudgeOptions.problemId"
               :label="t('term.problem-id')"
               :rules="[isUUID, isNotEmpty]"
-              :append-inner-icon="rejudgeOptions.problemId !== undefined && 'mdi-delete'"
+              :append-inner-icon="ifNotUndefined(rejudgeOptions.problemId, 'mdi-delete')"
               @click:append-inner="rejudgeOptions.problemId = undefined"
             />
           </VCol>
@@ -32,7 +32,7 @@
                 { title: 'Completed', value: 4 }
               ]"
               :label="t('term.state')"
-              :append-inner-icon="rejudgeOptions.state !== undefined && 'mdi-delete'"
+              :append-inner-icon="ifNotUndefined(rejudgeOptions.state, 'mdi-delete')"
               @click:append-inner="rejudgeOptions.state = undefined"
             />
           </VCol>
@@ -40,7 +40,7 @@
             <VTextField
               v-model="rejudgeOptions.status"
               :label="t('term.status')"
-              :append-inner-icon="rejudgeOptions.status !== undefined && 'mdi-delete'"
+              :append-inner-icon="ifNotUndefined(rejudgeOptions.status, 'mdi-delete')"
               @click:append-inner="rejudgeOptions.status = undefined"
             />
           </VCol>
@@ -49,7 +49,7 @@
               v-model="rejudgeOptions.runnerId"
               :rules="[isUUID]"
               :label="t('term.runner-id')"
-              :append-inner-icon="rejudgeOptions.runnerId !== undefined && 'mdi-delete'"
+              :append-inner-icon="ifNotUndefined(rejudgeOptions.runnerId, 'mdi-delete')"
               @click:append-inner="rejudgeOptions.runnerId = undefined"
             />
           </VCol>
@@ -58,7 +58,7 @@
               v-model.number="rejudgeOptions.scoreL"
               :rules="[(v) => v === undefined || v >= 0, (v) => v === undefined || v <= 100]"
               :label="t('min-score')"
-              :append-inner-icon="rejudgeOptions.scoreL !== undefined && 'mdi-delete'"
+              :append-inner-icon="ifNotUndefined(rejudgeOptions.scoreL, 'mdi-delete')"
               @click:append-inner="rejudgeOptions.scoreL = undefined"
             />
           </VCol>
@@ -67,7 +67,7 @@
               v-model.number="rejudgeOptions.scoreR"
               :rules="[(v) => v === undefined || v >= 0, (v) => v === undefined || v <= 100]"
               :label="t('max-score')"
-              :append-inner-icon="rejudgeOptions.scoreR !== undefined && 'mdi-delete'"
+              :append-inner-icon="ifNotUndefined(rejudgeOptions.scoreR, 'mdi-delete')"
               @click:append-inner="rejudgeOptions.scoreR = undefined"
             />
           </VCol>
@@ -75,7 +75,7 @@
             <DateTimeInput
               v-model="rejudgeOptions.submittedAtL"
               :label="t('submitted-after')"
-              :append-inner-icon="rejudgeOptions.submittedAtL !== undefined && 'mdi-delete'"
+              :append-inner-icon="ifNotUndefined(rejudgeOptions.submittedAtL, 'mdi-delete')"
               @click:append-inner="rejudgeOptions.submittedAtL = undefined"
             />
           </VCol>
@@ -83,7 +83,7 @@
             <DateTimeInput
               v-model="rejudgeOptions.submittedAtR"
               :label="t('submitted-before')"
-              :append-inner-icon="rejudgeOptions.submittedAtR !== undefined && 'mdi-delete'"
+              :append-inner-icon="ifNotUndefined(rejudgeOptions.submittedAtR, 'mdi-delete')"
               @click:append-inner="rejudgeOptions.submittedAtR = undefined"
             />
           </VCol>
@@ -250,6 +250,8 @@ const isNotEmpty = (value: string | undefined) => {
   if (value.length > 0) return true
   return t('hint.cannot-be-empty')
 }
+
+const ifNotUndefined = <T,>(cond: unknown, value: T) => (cond !== undefined ? value : undefined)
 </script>
 
 <i18n>

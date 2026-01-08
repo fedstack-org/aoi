@@ -80,8 +80,10 @@ export const apiUserAuthPlugin = fastifyPlugin(async (s) => {
   s.addHook('onRequest', async (req, rep) => {
     if (req.headers.authorization) {
       const token = req.headers.authorization.replace(/^(?:bearer|token) /i, '')
-      const { payload, protectedHeader } = await jose.jwtVerify(token, (header, token) =>
-        header.kid && JWKS ? JWKS(header, token) : secret
+      const { payload, protectedHeader } = await jose.jwtVerify(
+        token,
+        (header: jose.JWSHeaderParameters, token: jose.FlattenedJWSInput) =>
+          header.kid && JWKS ? JWKS(header, token) : secret
       )
       if (IsUserPayload.Check(payload)) {
         req.user = {

@@ -29,7 +29,7 @@ export const orgAdminMemberRoutes = defineRoutes(async (s) => {
     },
     async (req) => {
       const ctx = req.inject(kOrgContext)
-      const capability = new BSON.Long(req.query.capability ?? 0)
+      const capability = new BSON.Long(req.query.capability ?? '0')
       let count = 0
       if (req.query.count) {
         count = await orgMemberships.countDocuments({

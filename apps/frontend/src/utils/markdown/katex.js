@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default-member */
 import katex from 'katex'
 
 // Test if potential opening or closing delimieter

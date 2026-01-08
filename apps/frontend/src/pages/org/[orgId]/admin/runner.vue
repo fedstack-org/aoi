@@ -54,7 +54,7 @@
             <VBtn
               variant="text"
               icon="mdi-pencil"
-              @click="(editRunnerId = item._id), (editDialog = true)"
+              @click="((editRunnerId = item._id), (editDialog = true))"
             />
           </template>
         </VDataTable>
@@ -68,7 +68,7 @@
         <SettingsEditor
           :endpoint="`org/${orgId}/admin/runner/${editRunnerId}`"
           allow-delete
-          @updated="(editDialog = false), runners.execute()"
+          @updated="((editDialog = false), runners.execute())"
         >
           <template v-slot="scoped">
             <RunnerInfoInput v-model="scoped.value" />

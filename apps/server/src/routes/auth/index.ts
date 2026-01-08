@@ -47,6 +47,13 @@ export const authRoutes = defineRoutes(async (s) => {
         response: {
           200: T.Unknown()
         }
+      },
+      config: {
+        rateLimit: {
+          max: 5,
+          timeWindow: '1 minute',
+          groupId: 'login'
+        }
       }
     },
     async (req, rep) => {
@@ -68,6 +75,13 @@ export const authRoutes = defineRoutes(async (s) => {
           200: T.Object({
             token: T.String()
           })
+        }
+      },
+      config: {
+        rateLimit: {
+          max: 5,
+          timeWindow: '1 minute',
+          groupId: 'login'
         }
       }
     },
