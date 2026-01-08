@@ -40,7 +40,7 @@ export const adminUserRoutes = defineRoutes(async (s) => {
         filter,
         {
           projection: {
-            authSources: { authLocked: 1 }
+            'authSources.authLocked': 1
           }
         }
       )
@@ -88,11 +88,12 @@ export const adminUserRoutes = defineRoutes(async (s) => {
         })
       }
     },
-    async (req) => {
-      await users.updateOne(
+    async (req, rep) => {
+      const { matchedCount } = await users.updateOne(
         { _id: new BSON.UUID(req.params.userId) },
         { $set: { 'authSources.authLocked': req.body.authLocked } }
       )
+      if (!matchedCount) return rep.notFound()
       return {}
     }
   )
