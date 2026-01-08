@@ -27,6 +27,7 @@ import { useAsyncState } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
+import { enableLoginAutoRedirect } from '@/utils/flags'
 import { http } from '@/utils/http'
 
 const { t } = useI18n()
@@ -51,7 +52,7 @@ const colors: Record<string, string> = {
 const login = useAsyncState(
   async () => {
     const data = await http.get('auth/login').json<{ providers: string[]; signup: boolean }>()
-    if (data.providers.length === 1) {
+    if (enableLoginAutoRedirect && data.providers.length === 1) {
       router.push({ path: `/auth/login/${data.providers[0]}`, query: route.query })
     }
     return data

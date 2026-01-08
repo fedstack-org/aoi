@@ -7,5 +7,6 @@ export const loginHint = import.meta.env.VITE_LOGIN_HINT
 export const verifyHint = import.meta.env.VITE_VERIFY_HINT
 export const enableOverview = !!import.meta.env.VITE_ENABLE_OVERVIEW
 export const enableSlugFinder = !!import.meta.env.VITE_ENABLE_SLUG_FINDER
+export const enableLoginAutoRedirect = !!import.meta.env.VITE_ENABLE_LOGIN_AUTO_REDIRECT
 export const plausibleEndpoint = import.meta.env.VITE_PLAUSIBLE_ENDPOINT
 export const plausibleDomain = import.meta.env.VITE_PLAUSIBLE_DOMAIN
