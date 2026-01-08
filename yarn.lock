@@ -253,6 +253,7 @@ __metadata:
     "@babel/types": "npm:^7.21.4"
     "@intlify/unplugin-vue-i18n": "npm:^0.12.2"
     "@mdi/font": "npm:7.0.96"
+    "@plausible-analytics/tracker": "npm:^0.4.4"
     "@sinclair/typebox": "npm:^0.32.19"
     "@types/blueimp-md5": "npm:^2.18.0"
     "@types/debug": "npm:^4.1.12"
@@ -2403,6 +2404,13 @@ __metadata:
   version: 0.2.9
   resolution: "@pkgr/core@npm:0.2.9"
   checksum: 10/bb2fb86977d63f836f8f5b09015d74e6af6488f7a411dcd2bfdca79d76b5a681a9112f41c45bdf88a9069f049718efc6f3900d7f1de66a2ec966068308ae517f
+  languageName: node
+  linkType: hard
+
+"@plausible-analytics/tracker@npm:^0.4.4":
+  version: 0.4.4
+  resolution: "@plausible-analytics/tracker@npm:0.4.4"
+  checksum: 10/db3c63c8e54e4676aca1b2eba476887381433f0ca277e302ceeab2f8300a8b32c581c3fa536cff984888504e821e1badbe54a64b727874eff75ceb31c7ffe4fc
   languageName: node
   linkType: hard
 

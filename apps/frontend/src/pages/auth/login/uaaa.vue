@@ -11,6 +11,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useLogin } from '@/stores/app'
+import { trackLogin } from '@/utils/analytics'
 import { noMessage, useAsyncTask } from '@/utils/async'
 import { http, prettyHTTPError } from '@/utils/http'
 import { useUAAALogin } from '@/utils/user/uaaa'
@@ -34,8 +35,10 @@ const task = useAsyncTask(async () => {
       }
     })
     const { token } = await resp.json<{ token: string }>()
+    trackLogin('uaaa', 'true')
     postLogin(token)
   } catch (err) {
+    trackLogin('uaaa', 'false')
     router.replace({ path: '/auth/login', query: route.query })
     throw new Error(await prettyHTTPError(err))
   }

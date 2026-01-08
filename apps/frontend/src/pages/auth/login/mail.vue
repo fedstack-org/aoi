@@ -37,6 +37,7 @@ import { useToast } from 'vue-toastification'
 import type { SubmitEventPromise } from 'vuetify'
 
 import { useLogin } from '@/stores/app'
+import { trackLogin } from '@/utils/analytics'
 import { http, prettyHTTPError } from '@/utils/http'
 
 const { t } = useI18n()
@@ -98,9 +99,11 @@ async function signin(ev: SubmitEventPromise) {
       }
     })
     const { token } = await resp.json<{ token: string }>()
+    trackLogin('mail', 'true')
     toast.success(t('hint.signin-success'))
     postLogin(token)
   } catch (err) {
+    trackLogin('mail', 'false')
     toast.error(t('hint.signin-wrong-credentials'))
   }
   isLoading.value = false
