@@ -118,6 +118,9 @@ export interface IContest
       solution: IContestSolutionRuleCtx
     }
   >
+
+  /** CIDR 格式的 IP 白名单列表，如 ["10.0.0.0/8", "192.168.1.0/24"] */
+  ipWhitelist?: string[]
 }
 
 export function getCurrentContestStage(now: number, { stages }: IContest) {

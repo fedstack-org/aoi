@@ -1,6 +1,7 @@
 export * from './capability.js'
 export * from './config.js'
 export * from './inject.js'
+export * from './ip.js'
 export * from './logger.js'
 export * from './module.js'
 export * from './package.js'

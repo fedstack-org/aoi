@@ -245,4 +245,42 @@ export const contestAdminRoutes = defineRoutes(async (s) => {
       return {}
     }
   )
+
+  s.get(
+    '/ipWhitelist',
+    {
+      schema: {
+        description: 'Get IP whitelist',
+        response: {
+          200: T.Object({
+            ipWhitelist: T.Array(T.String())
+          })
+        }
+      }
+    },
+    async (req) => {
+      const { _contest } = req.inject(kContestContext)
+      return { ipWhitelist: _contest.ipWhitelist ?? [] }
+    }
+  )
+
+  s.patch(
+    '/ipWhitelist',
+    {
+      schema: {
+        description: 'Update IP whitelist',
+        body: T.Object({
+          ipWhitelist: T.CIDRList()
+        })
+      }
+    },
+    async (req) => {
+      const { ipWhitelist } = req.body
+      await contests.updateOne(
+        { _id: req.inject(kContestContext)._contestId },
+        ipWhitelist.length > 0 ? { $set: { ipWhitelist } } : { $unset: { ipWhitelist: '' } }
+      )
+      return {}
+    }
+  )
 })

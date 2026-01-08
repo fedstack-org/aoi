@@ -104,6 +104,19 @@ export class ServerTypeBuilder extends JavaScriptTypeBuilder {
   BooleanOrString(options?: StringOptions) {
     return this.Union([this.Boolean(), this.String(options)])
   }
+
+  /** CIDR 格式字符串，支持 IPv4 和 IPv6 */
+  CIDR() {
+    return this.String({
+      pattern:
+        '^([0-9]{1,3}\\.){3}[0-9]{1,3}(/([0-9]|[1-2][0-9]|3[0-2]))?$|^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}(/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$'
+    })
+  }
+
+  /** CIDR 列表 */
+  CIDRList() {
+    return this.Array(this.CIDR())
+  }
 }
 
 export const T = new ServerTypeBuilder()

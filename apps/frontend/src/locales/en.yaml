@@ -131,6 +131,7 @@ term:
   filter: Filter
   access-level: Access Level
   rules: Rules
+  ip-whitelist: IP Whitelist
   ip: IP
   banned: Banned
   limit: Limits

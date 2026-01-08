@@ -14,7 +14,8 @@ import {
   CAP_NONE,
   createEvaluator,
   ensureCapability,
-  hasCapability
+  hasCapability,
+  isIpInWhitelist
 } from '../../utils/index.js'
 import { manageContent } from '../common/content.js'
 import { defineRoutes, loadCapability, loadUUID, paramSchemaMerger } from '../common/index.js'
@@ -63,6 +64,14 @@ export const contestScopedRoutes = defineRoutes(async (s) => {
       ensureCapability(capability, CONTEST_CAPS.CAP_ACCESS, s.httpErrors.forbidden())
     } else if (participant.banned) {
       ensureCapability(capability, CONTEST_CAPS.CAP_ADMIN, s.httpErrors.forbidden())
+    }
+    // IP 白名单检查（管理员可绕过）
+    if (
+      contest.ipWhitelist?.length &&
+      !hasCapability(capability, CONTEST_CAPS.CAP_ADMIN) &&
+      !isIpInWhitelist(req.ip, contest.ipWhitelist)
+    ) {
+      return rep.forbidden('IP not in whitelist')
     }
     req.provide(kContestContext, {
       _contestId: contestId,
