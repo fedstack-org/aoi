@@ -1,4 +1,4 @@
-import { isValidCIDR } from 'ipaddr.js'
+import ip from 'ipaddr.js'
 import { UUID } from 'mongodb'
 
 import {
@@ -278,7 +278,7 @@ export const contestAdminRoutes = defineRoutes(async (s) => {
     async (req, rep) => {
       const { ipWhitelist } = req.body
       for (const item of ipWhitelist) {
-        if (!isValidCIDR(item)) {
+        if (!ip.isValidCIDR(item)) {
           return rep.badRequest(`Invalid CIDR format: ${item}`)
         }
       }

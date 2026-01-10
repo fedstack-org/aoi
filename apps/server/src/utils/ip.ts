@@ -1,4 +1,4 @@
-import * as ipaddr from 'ipaddr.js'
+import ipaddr from 'ipaddr.js'
 
 export function isIpInCIDR(ip: string, cidr: string): boolean {
   try {
