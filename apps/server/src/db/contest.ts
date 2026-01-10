@@ -118,6 +118,8 @@ export interface IContest
       solution: IContestSolutionRuleCtx
     }
   >
+
+  ipWhitelist?: string[]
 }
 
 export function getCurrentContestStage(now: number, { stages }: IContest) {

@@ -104,6 +104,15 @@ export class ServerTypeBuilder extends JavaScriptTypeBuilder {
   BooleanOrString(options?: StringOptions) {
     return this.Union([this.Boolean(), this.String(options)])
   }
+
+  CIDR() {
+    // TODO: add CIDR format validation
+    return this.String()
+  }
+
+  CIDRList() {
+    return this.Array(this.CIDR())
+  }
 }
 
 export const T = new ServerTypeBuilder()

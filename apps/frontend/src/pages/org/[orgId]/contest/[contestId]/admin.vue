@@ -17,6 +17,9 @@
         <VTab prepend-icon="mdi-code-tags" :to="rel('rule')">
           {{ t('term.rules') }}
         </VTab>
+        <VTab prepend-icon="mdi-ip-network" :to="rel('ipWhitelist')">
+          {{ t('term.ip-whitelist') }}
+        </VTab>
       </VTabs>
     </VCol>
     <VCol>

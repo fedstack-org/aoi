@@ -131,6 +131,7 @@ term:
   filter: 过滤
   access-level: 访问等级
   rules: 规则
+  ip-whitelist: IP 白名单
   ip: IP 地址
   banned: 封禁
   limit: 限制
