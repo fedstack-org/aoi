@@ -40,7 +40,7 @@ import { useMfa } from '@/stores/app'
 import { enableMfa } from '@/utils/flags'
 import { http } from '@/utils/http'
 
-const props = defineProps<{
+const { userId } = defineProps<{
   userId: string
 }>()
 
@@ -60,7 +60,7 @@ const login = useAsyncState(() => http.get('auth/verify').json<{ providers: stri
 })
 
 const userInfo = useAsyncState(
-  () => http.get(`user/${props.userId}`).json<{ authLocked?: boolean }>(),
+  () => http.get(`user/${userId}`).json<{ authLocked?: boolean }>(),
   {}
 )
 </script>

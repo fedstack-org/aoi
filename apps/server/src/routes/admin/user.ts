@@ -40,22 +40,12 @@ export const adminUserRoutes = defineRoutes(async (s) => {
         filter,
         {
           projection: {
-            'authSources.password': 0,
-            'authSources.passwordResetDue': 0,
-            'authSources.mail': 0,
-            'authSources.sms': 0,
-            'authSources.iaaaId': 0,
-            'authSources.iaaaInfo': 0,
-            'authSources.uaaa': 0
+            authSources: 0
           }
         }
       )
       return {
-        items: items.map((item) => ({
-          ...item,
-          capability: item.capability?.toString(),
-          authLocked: item.authSources?.authLocked ?? false
-        })),
+        items: items.map((item) => ({ ...item, capability: item.capability?.toString() })),
         total
       }
     }
@@ -95,9 +85,10 @@ export const adminUserRoutes = defineRoutes(async (s) => {
       }
     },
     async (req, rep) => {
+      const { authLocked } = req.body
       const { matchedCount } = await users.updateOne(
         { _id: new BSON.UUID(req.params.userId) },
-        { $set: { 'authSources.authLocked': req.body.authLocked } }
+        { $set: { authLocked } }
       )
       if (!matchedCount) return rep.notFound()
       return {}

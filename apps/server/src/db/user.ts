@@ -18,7 +18,6 @@ export interface IUserAuthSources {
   iaaaId?: string
   iaaaInfo?: IAAAUserInfo
   uaaa?: string
-  authLocked?: boolean
 }
 
 export interface IUser {
@@ -26,6 +25,7 @@ export interface IUser {
 
   profile: IUserProfile
   authSources: IUserAuthSources
+  authLocked?: boolean
   capability?: BSON.Long
   namespace?: string
   tags?: string[]
