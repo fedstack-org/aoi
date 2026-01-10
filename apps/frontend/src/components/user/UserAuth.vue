@@ -59,6 +59,7 @@ const login = useAsyncState(() => http.get('auth/verify').json<{ providers: stri
   providers: []
 })
 
+// TODO: maybe we can pass user info from props
 const userInfo = useAsyncState(
   () => http.get(`user/${userId}`).json<{ authLocked?: boolean }>(),
   {}
