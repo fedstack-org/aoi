@@ -25,6 +25,7 @@ export interface IUser {
 
   profile: IUserProfile
   authSources: IUserAuthSources
+  authLocked?: boolean
   capability?: BSON.Long
   namespace?: string
   tags?: string[]

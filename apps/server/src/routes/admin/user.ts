@@ -71,6 +71,30 @@ export const adminUserRoutes = defineRoutes(async (s) => {
     }
   )
 
+  s.patch(
+    '/:userId/authLocked',
+    {
+      schema: {
+        description: 'Update user auth locked status',
+        params: T.Object({
+          userId: T.UUID()
+        }),
+        body: T.Object({
+          authLocked: T.Boolean()
+        })
+      }
+    },
+    async (req, rep) => {
+      const { authLocked } = req.body
+      const { matchedCount } = await users.updateOne(
+        { _id: new BSON.UUID(req.params.userId) },
+        { $set: { authLocked } }
+      )
+      if (!matchedCount) return rep.notFound()
+      return {}
+    }
+  )
+
   s.post(
     '/',
     {
