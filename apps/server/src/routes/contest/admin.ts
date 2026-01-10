@@ -1,3 +1,4 @@
+import { isValidCIDR } from 'ipaddr.js'
 import { UUID } from 'mongodb'
 
 import {
@@ -274,8 +275,13 @@ export const contestAdminRoutes = defineRoutes(async (s) => {
         })
       }
     },
-    async (req) => {
+    async (req, rep) => {
       const { ipWhitelist } = req.body
+      for (const item of ipWhitelist) {
+        if (!isValidCIDR(item)) {
+          return rep.badRequest(`Invalid CIDR format: ${item}`)
+        }
+      }
       await contests.updateOne(
         { _id: req.inject(kContestContext)._contestId },
         ipWhitelist.length > 0 ? { $set: { ipWhitelist } } : { $unset: { ipWhitelist: '' } }

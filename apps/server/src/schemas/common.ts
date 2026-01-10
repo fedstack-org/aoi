@@ -105,17 +105,11 @@ export class ServerTypeBuilder extends JavaScriptTypeBuilder {
     return this.Union([this.Boolean(), this.String(options)])
   }
 
-  /** CIDR 格式字符串，支持 IPv4 和 IPv6 */
   CIDR() {
-    // IPv4: 每个 octet 限制在 0-255，前缀长度 0-32
-    // IPv6: 基本格式检查，前缀长度 0-128（运行时由 ipaddr.js 完整验证）
-    return this.String({
-      pattern:
-        '^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(/([0-9]|[1-2][0-9]|3[0-2]))?$|^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}(/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$'
-    })
+    // TODO: add CIDR format validation
+    return this.String()
   }
 
-  /** CIDR 列表 */
   CIDRList() {
     return this.Array(this.CIDR())
   }

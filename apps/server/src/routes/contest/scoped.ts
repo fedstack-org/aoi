@@ -65,13 +65,13 @@ export const contestScopedRoutes = defineRoutes(async (s) => {
     } else if (participant.banned) {
       ensureCapability(capability, CONTEST_CAPS.CAP_ADMIN, s.httpErrors.forbidden())
     }
-    // IP 白名单检查（管理员可绕过）
+    // Admin can bypass IP whitelist
     if (
       contest.ipWhitelist?.length &&
       !hasCapability(capability, CONTEST_CAPS.CAP_ADMIN) &&
       !isIpInWhitelist(req.ip, contest.ipWhitelist)
     ) {
-      return rep.forbidden('IP not in whitelist')
+      return rep.forbidden()
     }
     req.provide(kContestContext, {
       _contestId: contestId,
