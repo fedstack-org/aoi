@@ -73,7 +73,7 @@ export const useAppState = defineStore('app_state', () => {
   const mfaAlive = isMfaAlive
   const mfaToken = mfaTokenValue
 
-  const debug = useLocalStorage('aoi-GENSHIN-START!', false, { writeDefaults: false })
+  const debug = useLocalStorage('aoi-debug', false, { writeDefaults: true })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const overrides = useLocalStorage('aoi-GENSHIN-OVERRIDES', {} as Record<string, any>, {
     writeDefaults: false
