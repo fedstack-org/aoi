@@ -38,9 +38,9 @@ export const http: typeof ky = ky.create({
     ],
     beforeError: [
       async (err: HTTPError) => {
-        if (err.response.status === 401 && token.value) {
+        if (token.value) {
           const { code } = (await err.response.json()) as { code: string }
-          if (code === 'FST_JWT_AUTHORIZATION_TOKEN_EXPIRED') {
+          if (['ERR_JWT_EXPIRED', 'FST_JWT_AUTHORIZATION_TOKEN_EXPIRED'].includes(code)) {
             throttledLogout()
           }
         }
