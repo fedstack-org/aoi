@@ -79,7 +79,9 @@ const solutionScopedRoutes = defineRoutes(async (s) => {
       if (!admin) return rep.forbidden()
 
       const { pull } = req.body
-      const currentData = ctx._problem.data.find(({ hash }) => hash === ctx._problem.currentDataHash)
+      const currentData = ctx._problem.data.find(
+        ({ hash }) => hash === ctx._problem.currentDataHash
+      )
       if (pull && !currentData) return rep.preconditionFailed('Current data not found')
 
       const { modifiedCount } = await solutions.updateOne(

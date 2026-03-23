@@ -9,7 +9,7 @@ import { getFileUrl, defineRoutes, paramSchemaMerger } from '../common/index.js'
 import { kProblemContext } from './inject.js'
 
 const dataScopedRoutes = defineRoutes(async (s) => {
-  const { problems } = s.db
+  const { instances, problems, solutions } = s.db
 
   s.addHook('onRoute', paramSchemaMerger(T.Object({ hash: T.Hash() })))
   s.register(getFileUrl, {
@@ -36,6 +36,25 @@ const dataScopedRoutes = defineRoutes(async (s) => {
 
       ensureCapability(ctx._problemCapability, PROBLEM_CAPS.CAP_CONTENT, s.httpErrors.forbidden())
       const hash = (req.params as { hash: string }).hash
+      const [referencedSolution, referencedInstance] = await Promise.all([
+        solutions.findOne(
+          {
+            problemId: ctx._problemId,
+            problemDataHash: hash
+          },
+          { projection: { _id: 1 } }
+        ),
+        instances.findOne(
+          {
+            problemId: ctx._problemId,
+            problemDataHash: hash
+          },
+          { projection: { _id: 1 } }
+        )
+      ])
+      if (referencedSolution || referencedInstance) {
+        return rep.conflict('Problem data is still referenced')
+      }
       const { modifiedCount } = await problems.updateOne(
         { _id: ctx._problemId, currentDataHash: { $ne: hash } },
         { $pull: { data: { hash } } }
