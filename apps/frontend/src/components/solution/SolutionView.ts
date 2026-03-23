@@ -20,6 +20,7 @@ export interface ISolutionViewProps {
 export function useSolutionView(props: ISolutionViewProps) {
   const app = useAppState()
   const settings = props.contestId ? useContestSettings() : useProblemSettings()
+  const pull = ref(true)
   const showDetails = computed(() => {
     if (props.admin) return true
     if (solution.state.value?.userId === app.userId) {
@@ -67,7 +68,7 @@ export function useSolutionView(props: ISolutionViewProps) {
     const url = props.contestId
       ? `contest/${props.contestId}/solution/${props.solutionId}/rejudge`
       : `problem/${props.problemId}/solution/${props.solutionId}/rejudge`
-    await http.post(url)
+    await http.post(url, { json: { pull: pull.value } })
     solution.execute()
     autoRefresh.resume()
   })
@@ -88,6 +89,7 @@ export function useSolutionView(props: ISolutionViewProps) {
     solution,
     showDetails,
     showData,
+    pull,
     viewFile,
     downloadEndpoint,
     submit,

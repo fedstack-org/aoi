@@ -62,37 +62,53 @@ const solutionScopedRoutes = defineRoutes(async (s) => {
     }
   )
 
-  s.post('/rejudge', {}, async (req, rep) => {
-    const ctx = req.inject(kProblemContext)
+  s.post(
+    '/rejudge',
+    {
+      schema: {
+        body: T.Object({
+          pull: T.Optional(T.Boolean())
+        })
+      }
+    },
+    async (req, rep) => {
+      const ctx = req.inject(kProblemContext)
 
-    const solutionId = loadUUID(req.params, 'solutionId', s.httpErrors.badRequest())
-    const admin = hasCapability(ctx._problemCapability, PROBLEM_CAPS.CAP_ADMIN)
-    if (!admin) return rep.forbidden()
+      const solutionId = loadUUID(req.params, 'solutionId', s.httpErrors.badRequest())
+      const admin = hasCapability(ctx._problemCapability, PROBLEM_CAPS.CAP_ADMIN)
+      if (!admin) return rep.forbidden()
 
-    const { modifiedCount } = await solutions.updateOne(
-      {
-        _id: solutionId,
-        contestId: { $exists: false },
-        problemId: ctx._problemId,
-        state: { $ne: SolutionState.CREATED }
-      },
-      [
+      const { pull } = req.body
+      const currentData = ctx._problem.data.find(({ hash }) => hash === ctx._problem.currentDataHash)
+      if (pull && !currentData) return rep.preconditionFailed('Current data not found')
+
+      const { modifiedCount } = await solutions.updateOne(
         {
-          $set: {
-            state: SolutionState.PENDING,
-            score: 0,
-            status: '',
-            metrics: {},
-            message: ''
-          }
+          _id: solutionId,
+          contestId: { $exists: false },
+          problemId: ctx._problemId,
+          state: { $ne: SolutionState.CREATED }
         },
-        { $unset: ['taskId', 'runnerId'] }
-      ],
-      { ignoreUndefined: true }
-    )
-    if (modifiedCount === 0) return rep.notFound()
-    return {}
-  })
+        [
+          {
+            $set: {
+              label: pull ? currentData?.config.label : undefined,
+              problemDataHash: pull ? ctx._problem.currentDataHash : undefined,
+              state: SolutionState.PENDING,
+              score: 0,
+              status: '',
+              metrics: {},
+              message: ''
+            }
+          },
+          { $unset: ['taskId', 'runnerId'] }
+        ],
+        { ignoreUndefined: true }
+      )
+      if (modifiedCount === 0) return rep.notFound()
+      return {}
+    }
+  )
 
   s.get(
     '/',
