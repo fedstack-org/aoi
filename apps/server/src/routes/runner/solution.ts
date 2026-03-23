@@ -222,20 +222,20 @@ export const runnerSolutionRoutes = defineRoutes(async (s) => {
       if (!oss) return { ...info, errMsg: 'OSS not enabled' }
       const problem = await s.db.problems.findOne({ _id: solution.problemId })
       if (!problem) return { ...info, errMsg: 'Problem not found' }
-      const currentData = problem.data.find(({ hash }) => hash === problem.currentDataHash)
-      if (!currentData) return { ...info, errMsg: 'Problem data not found' }
+      const problemData = problem.data.find(({ hash }) => hash === solution.problemDataHash)
+      if (!problemData) return { ...info, errMsg: 'Problem data not found' }
 
       const problemDataUrl = await getDownloadUrl(
         oss,
-        problemDataKey(problem._id, problem.currentDataHash)
+        problemDataKey(problem._id, solution.problemDataHash)
       )
       const solutionDataUrl = await getDownloadUrl(oss, solutionDataKey(solution._id))
 
       return {
         ...info,
-        problemConfig: currentData.config,
+        problemConfig: problemData.config,
         problemDataUrl,
-        problemDataHash: problem.currentDataHash,
+        problemDataHash: solution.problemDataHash,
         solutionDataUrl,
         solutionDataHash: solution.solutionDataHash
       }

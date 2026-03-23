@@ -217,19 +217,19 @@ export const runnerInstanceRoutes = defineRoutes(async (s) => {
       if (!oss) return { ...info, errMsg: 'OSS not enabled' }
       const problem = await problems.findOne({ _id: instance.problemId })
       if (!problem) return { ...info, errMsg: 'Problem not found' }
-      const currentData = problem.data.find(({ hash }) => hash === problem.currentDataHash)
-      if (!currentData) return { ...info, errMsg: 'Problem data not found' }
+      const problemData = problem.data.find(({ hash }) => hash === instance.problemDataHash)
+      if (!problemData) return { ...info, errMsg: 'Problem data not found' }
 
       const problemDataUrl = await getDownloadUrl(
         oss,
-        problemDataKey(problem._id, problem.currentDataHash)
+        problemDataKey(problem._id, instance.problemDataHash)
       )
 
       return {
         ...info,
-        problemConfig: currentData.config,
+        problemConfig: problemData.config,
         problemDataUrl,
-        problemDataHash: problem.currentDataHash
+        problemDataHash: instance.problemDataHash
       }
     }
   )

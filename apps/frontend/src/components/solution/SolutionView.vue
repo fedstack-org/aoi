@@ -91,7 +91,15 @@
     />
     <VBtn
       v-if="admin"
+      variant="outlined"
+      :prepend-icon="pull ? 'mdi-source-pull' : 'mdi-pin'"
+      :text="pull ? t('solution.rejudge-mode-pull') : t('solution.rejudge-mode-pin')"
+      @click="pull = !pull"
+    />
+    <VBtn
+      v-if="admin"
       :text="t('action.rejudge')"
+      :append-icon="pull ? 'mdi-source-pull' : 'mdi-pin'"
       @click="rejudge.execute()"
       :loading="rejudge.isLoading.value"
     />
@@ -143,6 +151,7 @@ const {
   solution,
   showDetails,
   showData,
+  pull,
   viewFile,
   downloadEndpoint,
   submit,
@@ -157,9 +166,13 @@ en:
     info: Info
     details: Details
     data: Data
+    rejudge-mode-pin: Fixed rejudge
+    rejudge-mode-pull: Pull rejudge
 zh-Hans:
   solution:
     info: 信息
     details: 细节
     data: 数据
+    rejudge-mode-pin: 固定重测
+    rejudge-mode-pull: 拉取重测
 </i18n>
