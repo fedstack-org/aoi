@@ -90,8 +90,17 @@
         </VRow>
         <VBtn
           color="red"
+          variant="outlined"
+          :prepend-icon="pull ? 'mdi-source-pull' : 'mdi-pin'"
+          @click="pull = !pull"
+        >
+          {{ pull ? t('rejudge-mode-pull') : t('rejudge-mode-pin') }}
+        </VBtn>
+        <VBtn
+          color="red"
           variant="elevated"
           type="submit"
+          :append-icon="pull ? 'mdi-source-pull' : 'mdi-pin'"
           :loading="rejudgeAllTask.isLoading.value"
         >
           {{ t('action.rejudge-all') }}
@@ -193,11 +202,14 @@ const rejudgeOptions = reactive({
   submittedAtL: undefined as number | undefined,
   submittedAtR: undefined as number | undefined
 })
+const pull = ref(true)
 const rejudgeAllTask = useAsyncTask(async (ev: SubmitEventPromise) => {
   const result = await ev
   if (!result.valid) return noMessage()
   const { modifiedCount } = await http
-    .post(`contest/${props.contestId}/admin/rejudge-all`, { json: rejudgeOptions })
+    .post(`contest/${props.contestId}/admin/rejudge-all`, {
+      json: { ...rejudgeOptions, pull: pull.value }
+    })
     .json<{ modifiedCount: number }>()
   return withMessage(t('msg.rejudge-all-success', { count: modifiedCount }))
 })
@@ -258,6 +270,8 @@ const ifNotUndefined = <T,>(cond: unknown, value: T) => (cond !== undefined ? va
 en:
   ranklist-state: Ranklist State is {state}
   reset-runner: Switch Reset Runner
+  rejudge-mode-pin: Fixed rejudge
+  rejudge-mode-pull: Pull rejudge
   min-score: Min Score
   max-score: Max Score
   submitted-after: Submitted After
@@ -270,6 +284,8 @@ en:
 zh-Hans:
   ranklist-state: '排行榜状态: {state}'
   reset-runner: 切换重置运行器
+  rejudge-mode-pin: 固定重测
+  rejudge-mode-pull: 拉取重测
   min-score: 最小分数
   max-score: 最大分数
   submitted-after: 提交时间晚于

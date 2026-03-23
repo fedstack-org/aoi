@@ -21,7 +21,7 @@ import {
 import { kContestContext } from './inject.js'
 
 export const contestAdminRoutes = defineRoutes(async (s) => {
-  const { contests, solutions } = s.db
+  const { contests, problems, solutions } = s.db
 
   s.addHook('onRequest', async (req) => {
     ensureCapability(
@@ -106,6 +106,7 @@ export const contestAdminRoutes = defineRoutes(async (s) => {
         description: 'Rejudge all solutions',
         body: T.Object({
           problemId: T.Optional(T.UUID()),
+          pull: T.Optional(T.Boolean()),
           state: T.Optional(T.Integer({ minimum: 1, maximum: 4 })),
           status: T.Optional(T.String()),
           runnerId: T.Optional(T.String()),
@@ -121,36 +122,74 @@ export const contestAdminRoutes = defineRoutes(async (s) => {
         }
       }
     },
-    async (req) => {
-      const { modifiedCount } = await solutions.updateMany(
-        {
-          contestId: req.inject(kContestContext)._contestId,
-          problemId: req.body.problemId ? new UUID(req.body.problemId) : undefined,
-          state: req.body.state || { $ne: SolutionState.CREATED },
-          status: req.body.status,
-          runnerId:
-            typeof req.body.runnerId === 'string'
-              ? req.body.runnerId
-                ? new UUID(req.body.runnerId)
-                : { $exists: false }
-              : undefined,
-          score: generateRangeQuery(req.body.scoreL, req.body.scoreR),
-          submittedAt: generateRangeQuery(req.body.submittedAtL, req.body.submittedAtR)
-        },
-        [
-          {
-            $set: {
-              state: SolutionState.PENDING,
-              score: 0,
-              status: '',
-              metrics: {},
-              message: ''
-            }
-          },
-          { $unset: ['taskId', 'runnerId'] }
-        ],
-        { ignoreUndefined: true }
-      )
+    async (req, rep) => {
+      const baseQuery = {
+        contestId: req.inject(kContestContext)._contestId,
+        problemId: req.body.problemId ? new UUID(req.body.problemId) : undefined,
+        state: req.body.state || { $ne: SolutionState.CREATED },
+        status: req.body.status,
+        runnerId:
+          typeof req.body.runnerId === 'string'
+            ? req.body.runnerId
+              ? new UUID(req.body.runnerId)
+              : { $exists: false }
+            : undefined,
+        score: generateRangeQuery(req.body.scoreL, req.body.scoreR),
+        submittedAt: generateRangeQuery(req.body.submittedAtL, req.body.submittedAtR)
+      }
+
+      if (!req.body.pull) {
+        const { modifiedCount } = await solutions.updateMany(
+          baseQuery,
+          [
+            {
+              $set: {
+                state: SolutionState.PENDING,
+                score: 0,
+                status: '',
+                metrics: {},
+                message: ''
+              }
+            },
+            { $unset: ['taskId', 'runnerId'] }
+          ],
+          { ignoreUndefined: true }
+        )
+        return { modifiedCount }
+      }
+
+      const matchedProblemIds = await solutions.distinct('problemId', baseQuery, {
+        ignoreUndefined: true
+      })
+      if (!matchedProblemIds.length) return { modifiedCount: 0 }
+
+      const matchedProblems = await problems
+        .find({ _id: { $in: matchedProblemIds } }, { projection: { currentDataHash: 1, data: 1 } })
+        .toArray()
+      let modifiedCount = 0
+      for (const problem of matchedProblems) {
+        const currentData = problem.data.find(({ hash }) => hash === problem.currentDataHash)
+        if (!currentData) return rep.preconditionFailed('Current data not found')
+        const result = await solutions.updateMany(
+          { ...baseQuery, problemId: problem._id },
+          [
+            {
+              $set: {
+                label: currentData.config.label,
+                problemDataHash: problem.currentDataHash,
+                state: SolutionState.PENDING,
+                score: 0,
+                status: '',
+                metrics: {},
+                message: ''
+              }
+            },
+            { $unset: ['taskId', 'runnerId'] }
+          ],
+          { ignoreUndefined: true }
+        )
+        modifiedCount += result.modifiedCount
+      }
       return { modifiedCount }
     }
   )
