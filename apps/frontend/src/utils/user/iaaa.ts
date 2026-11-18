@@ -14,33 +14,23 @@ const html = `
 `
 
 export async function getToken() {
-  const iframe = document.createElement('iframe')
-  iframe.style.background = 'white'
-  iframe.style.zIndex = '9999'
-  iframe.style.border = 'none'
-  iframe.style.position = 'fixed'
-  iframe.style.top = '0'
-  iframe.style.left = '0'
-  iframe.style.width = '100%'
-  iframe.style.height = '100%'
-  iframe.src = '/auth/iaaa'
-  document.body.appendChild(iframe)
-  // const win = window.open('/auth/iaaa', 'iaaa', 'width=800,height=600')
-  const client = iframe.contentWindow
-  if (!client) throw new Error('Failed to open IAAA window')
+  // IAAA sends X-Frame-Options: DENY and CSP frame-ancestors 'none'. It must
+  // be opened as a top-level document rather than embedded in an iframe.
+  const client = window.open('/auth/iaaa', 'iaaa', 'popup,width=800,height=600')
+  if (!client) throw new Error('Please allow popups to sign in with IAAA')
   client.document.write(html)
   client.document.forms[0].submit()
   for (;;) {
     try {
       const token = new URLSearchParams(client.document.location.search).get('token')
       if (token) {
-        // win.close()
-        iframe.remove()
+        client.close()
         return token
       }
     } catch (err) {
       //
     }
+    if (client.closed) throw new Error('IAAA login window was closed')
     await sleep(200)
   }
 }
