@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>IAAA</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        display: flex;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        color: #333;
+      }
+      #msg {
+        max-width: 32rem;
+        padding: 1rem;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="msg">正在跳转到北京大学统一身份认证… / Redirecting to PKU IAAA…</div>
+    <script>
+      /*
+       * IAAA relay page, protocol v2 (top-level redirects only).
+       *
+       * This page is the redirectUrl registered with IAAA for this AOI build.
+       *
+       *   1. A client navigates here with
+       *        ?relay=1&state=<random>&return=<callback URL>&appID=<id>&appName=<name>
+       *      The return URL must be same-origin (AOI's /auth/iaaa-callback) or
+       *      listed in /auth/iaaa.json (deployment-provided), for example
+       *        { "relayTargets": ["https://uaaa.example.org/auth/redirect"] }
+       *      appID/appName must match this page's own IAAA app when the deployment
+       *      provides them in /auth/iaaa.json ("appID", "appName").
+       *   2. The request is remembered in this tab's sessionStorage and the page
+       *      replaces itself with IAAA, using this page as redirectUrl.
+       *   3. IAAA returns here with ?token=…; the page forwards to
+       *        <return>#token=…&state=…
+       *      and removes the record. Unknown or expired returns forward nothing.
+       *
+       * Protocol v1 (postMessage to window.opener) is kept for clients that have
+       * not been upgraded yet, limited to the same allowlist.
+       */
+      ;(function () {
+        var KEY = 'aoi:iaaa-relay'
+        var TTL = 15 * 60 * 1000
+        var IAAA = 'https://iaaa.pku.edu.cn/iaaa/oauth.jsp'
+        var msg = document.getElementById('msg')
+        var self = location.origin + location.pathname
+        var query = new URLSearchParams(location.search)
+
+        function fail(text) {
+          msg.textContent = text
+        }
+
+        function loadConfig() {
+          return fetch('/auth/iaaa.json', { cache: 'no-store' })
+            .then(function (r) {
+              return r.ok ? r.json() : {}
+            })
+            .catch(function () {
+              return {}
+            })
+        }
+
+        function allowedReturn(value, config) {
+          var url
+          try {
+            url = new URL(value)
+          } catch (e) {
+            return false
+          }
+          if (url.hash || url.username || url.password) return false
+          var exact = url.origin + url.pathname
+          if (url.origin === location.origin && url.pathname === '/auth/iaaa-callback') return true
+          var targets = Array.isArray(config.relayTargets) ? config.relayTargets : []
+          return targets.indexOf(exact) !== -1 && url.search === ''
+        }
+
+        function readRecord() {
+          try {
+            var r = JSON.parse(sessionStorage.getItem(KEY) || 'null')
+            if (r && typeof r.state === 'string' && typeof r.ret === 'string') return r
+          } catch (e) {}
+          return null
+        }
+
+        function start(config) {
+          var state = query.get('state') || ''
+          var ret = query.get('return') || ''
+          var appID = config.appID || query.get('appID') || ''
+          var appName = config.appName || query.get('appName') || appID
+          if (!/^[A-Za-z0-9_-]{16,128}$/.test(state)) return fail('无效的请求 / Invalid request')
+          if (!allowedReturn(ret, config)) return fail('不允许的回调地址 / Return address not allowed')
+          if (!appID || (config.appID && query.get('appID') && query.get('appID') !== config.appID))
+            return fail('应用不匹配 / App mismatch')
+          sessionStorage.setItem(KEY, JSON.stringify({ state: state, ret: ret, at: Date.now() }))
+          var target = new URL(IAAA)
+          target.searchParams.set('appID', appID)
+          target.searchParams.set('appName', appName)
+          target.searchParams.set('redirectUrl', self)
+          location.replace(target.href)
+        }
+
+        function finish(token) {
+          var record = readRecord()
+          sessionStorage.removeItem(KEY)
+          history.replaceState(null, '', location.pathname)
+          if (!record || Date.now() - record.at > TTL) {
+            return fail('认证请求已失效，请回到原页面重新登录。/ The request expired. Please start again.')
+          }
+          var params = new URLSearchParams()
+          params.set('token', token)
+          params.set('state', record.state)
+          location.replace(record.ret + '#' + params.toString())
+        }
+
+        // Protocol v1 compatibility: answer an opener that drives this page by postMessage.
+        function legacy(config) {
+          var origins = [location.origin]
+          ;(Array.isArray(config.relayTargets) ? config.relayTargets : []).forEach(function (t) {
+            try {
+              origins.push(new URL(t).origin)
+            } catch (e) {}
+          })
+          window.addEventListener('message', function (ev) {
+            if (origins.indexOf(ev.origin) === -1 || !ev.data || !Array.isArray(ev.data.actions)) return
+            ev.data.actions.forEach(function (a) {
+              if (a.action === 'init') ev.source.postMessage({ ready: true }, ev.origin)
+              if (a.action === 'write') {
+                var m = /name=appID value="([^"]*)"[\s\S]*name=appName value="([^"]*)"/.exec(String(a.html || ''))
+                if (!m) return
+                var target = new URL(IAAA)
+                target.searchParams.set('appID', m[1])
+                target.searchParams.set('appName', m[2])
+                target.searchParams.set('redirectUrl', self)
+                location.replace(target.href)
+              }
+              if (a.action === 'getToken')
+                ev.source.postMessage({ token: new URLSearchParams(location.search).get('token') }, ev.origin)
+            })
+          })
+          msg.textContent = ''
+        }
+
+        var token = query.get('token')
+        var opened = !!window.opener || window.parent !== window
+        if (token && readRecord()) return finish(token)
+        if (query.get('relay') === '1') return loadConfig().then(start)
+        // A v1 client (cross-origin opener, or an old same-origin window) reads the token itself.
+        if (opened) return loadConfig().then(legacy)
+        if (token) return finish(token)
+        fail('请从原页面发起登录。/ Please start sign-in from the original page.')
+      })()
+    </script>
+  </body>
+</html>

@@ -29,6 +29,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { enableLoginAutoRedirect } from '@/utils/flags'
 import { http } from '@/utils/http'
+import { abandonIaaa } from '@/utils/user/iaaa'
 
 const { t } = useI18n()
 
@@ -48,6 +49,9 @@ const colors: Record<string, string> = {
   iaaa: '#9b0000',
   uaaa: '#1f88ff'
 }
+
+// Back from IAAA lands here; a pending IAAA login was abandoned.
+abandonIaaa('login')
 
 const login = useAsyncState(
   async () => {

@@ -1,6 +1,10 @@
 <template>
   <VCardActions>
-    <VBtn variant="elevated" @click="updateTask.execute()" :loading="updateTask.isLoading.value">
+    <VBtn
+      variant="elevated"
+      @click="updateTask.execute()"
+      :loading="redirecting || bindTask.isLoading.value"
+    >
       {{ t('rebind-iaaa') }}
     </VBtn>
   </VCardActions>
@@ -18,7 +22,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 
-const { updateTask } = useRebindIaaa(toRef(props, 'userId'))
+const { updateTask, bindTask, redirecting } = useRebindIaaa(toRef(props, 'userId'))
 </script>
 
 <i18n>
