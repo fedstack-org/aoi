@@ -31,6 +31,10 @@ jobs:
           node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'
 
+      # npm trusted publishing (OIDC) needs npm 11.5.1 or later.
+      - name: Update npm
+        run: npm install -g npm@^11.5.1
+
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "dir=$(corepack yarn config get cacheFolder)" >> $GITHUB_OUTPUT
@@ -52,8 +56,6 @@ jobs:
       - name: Publish and commit
         id: publish
         run: corepack yarn zx scripts/publish.mjs
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Upload server tgz
         uses: actions/upload-artifact@v4
