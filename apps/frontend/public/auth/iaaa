@@ -43,8 +43,11 @@
        *        <return>#token=…&state=…
        *      and removes the record. Unknown or expired returns forward nothing.
        *
-       * Protocol v1 (postMessage to window.opener) is kept for clients that have
-       * not been upgraded yet, limited to the same allowlist.
+       * Protocol v1 (postMessage to window.opener) is kept temporarily for clients
+       * that have not been upgraded yet. postMessage identifies senders by origin
+       * only, so it answers just the opener on an allowlisted origin and always
+       * signs in with this deployment's own IAAA app. It will be removed once all
+       * clients use v2.
        */
       ;(function () {
         var KEY = 'aoi:iaaa-relay'
@@ -129,15 +132,17 @@
             } catch (e) {}
           })
           window.addEventListener('message', function (ev) {
-            if (origins.indexOf(ev.origin) === -1 || !ev.data || !Array.isArray(ev.data.actions)) return
+            if (ev.source !== window.opener || origins.indexOf(ev.origin) === -1) return
+            if (!ev.data || !Array.isArray(ev.data.actions)) return
             ev.data.actions.forEach(function (a) {
               if (a.action === 'init') ev.source.postMessage({ ready: true }, ev.origin)
               if (a.action === 'write') {
                 var m = /name=appID value="([^"]*)"[\s\S]*name=appName value="([^"]*)"/.exec(String(a.html || ''))
-                if (!m) return
+                var appID = config.appID || (m && m[1])
+                if (!appID || (config.appID && m && m[1] !== config.appID)) return
                 var target = new URL(IAAA)
-                target.searchParams.set('appID', m[1])
-                target.searchParams.set('appName', m[2])
+                target.searchParams.set('appID', appID)
+                target.searchParams.set('appName', config.appName || (m && m[2]) || appID)
                 target.searchParams.set('redirectUrl', self)
                 location.replace(target.href)
               }
@@ -149,7 +154,7 @@
         }
 
         var token = query.get('token')
-        var opened = !!window.opener || window.parent !== window
+        var opened = !!window.opener
         if (token && readRecord()) return finish(token)
         if (query.get('relay') === '1') return loadConfig().then(start)
         // A v1 client (cross-origin opener, or an old same-origin window) reads the token itself.
